@@ -14,8 +14,8 @@ def loading_articles_links(year):
         links = pd.read_csv('data/'+year+'/links.tsv',sep='\t', comment='#', names=['linkSource', 'linkTarget'] )
     
     if (year == '2024') :
-        article_names = pd.read_csv('data/'+year+'/articles2024.csv')
-        links = pd.read_csv('data/'+year+'/links2024.csv')
+        article_names = pd.read_csv('data/'+year+'/articles2024.csv', skiprows=1)
+        links = pd.read_csv('data/'+year+'/links2024.csv', skiprows=1)
     
     return article_names, links
 

@@ -43,7 +43,7 @@ def scrape_wikipedia_articles(article_titles):
 
 
 
-def export_links_to_csv(article_links, output_file):
+def export_dict_links_to_csv(article_links, output_file):
     """
     Exports the direct links to the Wikipedia articles to a CSV file.
     
@@ -60,6 +60,23 @@ def export_links_to_csv(article_links, output_file):
                 for target in targets:
                     writer.writerow([source, target])
 
+
+def export_df_links_to_csv(df, output_file):
+    """
+    Exports the links from a DataFrame to a CSV file with columns "linkSource" and "linkTarget".
+    
+    Parameters:
+    df (pandas.DataFrame): A DataFrame containing the links. It should have columns that can be renamed to "linkSource" and "linkTarget".
+    output_file (str): The path to the output CSV file.
+    """
+    # Ensure the DataFrame has the correct column names
+    df = df.rename(columns={df.columns[0]: "linkSource", df.columns[1]: "linkTarget"})
+    
+    # Select only the required columns in case there are more
+    df = df[["linkSource", "linkTarget"]]
+    
+    # Export to CSV
+    df.to_csv(output_file, index=False)
 
 
 def export_articles_to_csv(articles, output_file):

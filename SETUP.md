@@ -22,7 +22,21 @@ pip install -r pip_requirements.txt
 
 
 ### How to use the library
+
 Tell us how the code is arranged, any explanations goes here.
+
+#### Ollama library setup
+
+1) Install [Docker](https://docs.docker.com/get-started/get-docker/)
+2) Follow instruction to use [Ollama container](https://hub.docker.com/r/ollama/ollama) on CPU/GPU
+3) Run model locally : `docker exec -it <container name> ollama run <model>`
+   e.g. (`docker exec -it ollama ollama run mistral`)
+
+
+
+
+
+
 
 
 

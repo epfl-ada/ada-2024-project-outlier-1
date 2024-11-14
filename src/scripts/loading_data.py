@@ -5,17 +5,31 @@ import numpy as np
 __all__ = ['loading_articles_links', 'articles_in_common']
 
 
-def loading_articles_links(year): 
-    '''
-    Loading the links and article names list for 2007 or 2024
-    '''
+def loading_articles_links(year, raw = False): 
+    """
+    Loading the links and article names list for 2007 or 2024.
+
+    Args:
+        year (str): year of the desired wikipedia's version. Can either be 2007 or 2024.
+        raw (bool, optional): Put to true if want to work with the unprocessed data (only for 2024). Defaults to False.
+
+    Returns:
+        article_names (DataFrame): list of all Wikipedia's article names of the desired year
+        links (DataFrame): all pair of links found in the network created by wikipedia's articles.
+    """
+    # raise a value error if the date specified is neither 2007 nor 2024
+    #assert year == "2007" or year == 2024
+    
+    DATA_PATH = 'data/' + year + '/'
     if (year == '2007') :
-        article_names = pd.read_csv('data/'+year+'/articles.tsv',sep='\t', comment='#', names=['article_'+year])
-        links = pd.read_csv('data/'+year+'/links.tsv',sep='\t', comment='#', names=['linkSource', 'linkTarget'] )
+        article_names = pd.read_csv(DATA_PATH + 'articles.tsv', sep='\t', comment='#', names=['article_'+ year])
+        links = pd.read_csv(DATA_PATH + 'links.tsv', sep='\t', comment='#', names=['linkSource', 'linkTarget'] )
     
     if (year == '2024') :
-        article_names = pd.read_csv('data/'+year+'/articles2024.csv', skiprows=1)
-        links = pd.read_csv('data/'+year+'/links2024.csv', skiprows=1)
+        if raw:
+            DATA_PATH += 'raw_'
+        article_names = pd.read_csv('articles2024.csv', skiprows=1)
+        links = pd.read_csv('links2024.csv', skiprows=1)
     
     return article_names, links
 

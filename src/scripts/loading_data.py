@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 
 # loading all functions in the script
-__all__ = ['loading_articles_links', 'articles_in_common']
+__all__ = ['loading_articles_links', 'articles_in_common', 'load_spm_2007']
 
 
 def loading_articles_links(year, raw = False): 
@@ -42,9 +42,9 @@ def articles_in_common(list1, list2) :
 
 def load_spm_2007():
     '''
-    Load the shortest path matrix from the file given in the wikispeedia dataset
+    Load the shortest path matrix from the file shortest-path-distance-matrix.txt given in the original wikispeedia dataset
     '''
-    
+
     filename = 'data/2007/shortest-path-distance-matrix.txt'
     matrix = []
     

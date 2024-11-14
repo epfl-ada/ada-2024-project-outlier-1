@@ -28,8 +28,8 @@ def loading_articles_links(year, raw = False):
     if (year == '2024') :
         if raw:
             DATA_PATH += 'raw_'
-        article_names = pd.read_csv('articles2024.csv', skiprows=1)
-        links = pd.read_csv('links2024.csv', skiprows=1)
+        article_names = pd.read_csv(DATA_PATH + 'articles2024.csv', skiprows=1)
+        links = pd.read_csv(DATA_PATH + 'links2024.csv', skiprows=1, names=['linkSource', 'linkTarget'] )
     
     return article_names, links
 

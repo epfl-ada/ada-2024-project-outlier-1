@@ -39,3 +39,23 @@ def articles_in_common(list1, list2) :
     '''
 
     return set(list1['linkSource']).intersection(list2['linkSource'])
+
+def load_spm_2007():
+    '''
+    Load the shortest path matrix from the file given in the wikispeedia dataset
+    '''
+    
+    filename = 'data/2007/shortest-path-distance-matrix.txt'
+    matrix = []
+    
+    with open(filename, 'r') as file:
+        for line in file:
+            # Skip lines that start with '#', as they are comments
+            if line.startswith('#') or line.startswith('\n'):
+                continue
+
+            # Convert each character in the line to an integer or None for unreachable paths
+            row = [(int(char) if char != '_' else float('inf')) for char in line.strip()]
+            matrix.append(row)
+    
+    return np.array(matrix)

@@ -39,7 +39,8 @@ def process_player_path_data(df,min_games=10,max_length=50):
     df["end"] = df["path"].str[-1]
 
     df = df[["start", "end", "path", "length"]]
-    df = df.groupby(["start", "end"]).apply(lambda x: x,include_groups=False)
+    df = df.groupby(["start", "end"]).apply(lambda x: x)
+    df.drop(columns=["start", "end"], inplace=True)
 
     df["counts"] = df.groupby(by=["start", "end"],).size().sort_values(ascending=False)
     # Keep only path with more than min_games games

@@ -50,7 +50,7 @@ def generate_performance_scatter(avglen,models=['llama3_2007','mistral_2007']):
     yaxis=dict(
         tickmode='array',
         tickvals=np.arange(len(avglen.index)),
-        ticktext=avglen[['start', 'end']].apply(lambda x: x[0] + ' -> ' + x[1], axis=1)
+        ticktext=avglen[['start', 'end']].apply(lambda x: x.iloc[0] + ' -> ' + x.iloc[1], axis=1)
     ),
     height=2000,
     width=1000

@@ -11,3 +11,8 @@ seaborn
 pandas
 ipykernel
 networkx[default]
+lmql
+nest_asyncio
+requests
+beautifulsoup4
+scikit-learn

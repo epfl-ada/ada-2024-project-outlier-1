@@ -42,7 +42,7 @@ def generate_performance_scatter(avglen,models=['llama3_2007','mistral_2007']):
 
 # Customize the layout
     fig.update_layout(
-    title='Average path length',
+    title='Comparaison of path length',
     title_x=0.5,
     xaxis_title='Length',
     yaxis_title='Source -> Target',

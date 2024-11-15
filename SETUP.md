@@ -3,7 +3,7 @@
 This is a template repo for your project to help you organise and document your code better. 
 Please use this structure for your project and document the installation, usage and structure as below.
 
-## Quickstart
+## Quickstart
 
 ```bash
 # clone project

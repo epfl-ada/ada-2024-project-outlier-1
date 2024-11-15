@@ -4,8 +4,12 @@ import pandas as pd
 from scipy.stats import ttest_ind 
 import seaborn as sns
 import networkx as nx
+from matplotlib.patches import Patch
 
-__all__ = ['plot_average_links_per_page','creating_graph',
+
+__all__ = ['plot_average_links_per_page',
+           'plot_difference_links_article',
+           'creating_graph',
            'computing_shortest_path_matrix',
            'computing_difference_spm',
            'plotting_difference_heatmap']
@@ -18,9 +22,6 @@ def plot_average_links_per_page(links2007, links2024) :
     summary2007 = links2007.groupby(by='linkSource')
     summary2024 = links2024.groupby(by='linkSource')
 
-    summary2007_df = summary2007.apply(lambda x: x, include_groups=False)
-    summary2024_df = summary2024.apply(lambda x: x, include_groups=False)
-
     ### T test to find wheter those two means are significantly different : 
     # Null Hyp : the two means are not significantly different 
     # Alt hyp : they are significantly different 
@@ -32,10 +33,11 @@ def plot_average_links_per_page(links2007, links2024) :
     fig = plt.figure(figsize=(8,4))
 
     plt.subplot(1, 2, 1)
-    plt.bar(x=['2007', '2024'], height= [summary2007_df.shape[0], summary2024_df.shape[0]])
+    ax = sns.histplot(summary2007.count()['linkTarget'], kde=True, stat='density', color='orange', label='2007')
+    ax = sns.histplot(summary2024.count()['linkTarget'], kde=True, stat='density', color='blue', label='2024')
+    ax.set(title='Distribution of the number of links per article', xlabel='number of links', ylabel='pages')
     plt.ylabel('Total number of hyperlinks')
-    plt.title('Difference in total number of hyperlinks')
-
+    plt.legend()
 
     plt.subplot(1, 2, 2)
     plt.bar(x=['2007', '2024'], height= [np.mean(summary2007.count()), np.mean(summary2024.count())])
@@ -43,7 +45,44 @@ def plot_average_links_per_page(links2007, links2024) :
     plt.title('Mean number of links per page')
 
     plt.tight_layout()
+    plt.show()
 
+def plot_difference_links_article(links2007, links2024) :
+    '''
+    Plotting differences in links count per articles in 2004 vs 2007 
+    Above zero : there are more links in 2024 
+    Below zero : there are more links in 2007
+    '''
+    
+    # Aggregate counts of links per linkSource for each year
+    count_2007 = links2007.groupby(by='linkSource').size()
+    count_2024 = links2024.groupby(by='linkSource').size()
+
+    # we sort 2007 articles in decreasing order of number of links per article
+    sorted_values_2007 = count_2007.sort_values(ascending=False)
+    # we sort 2024 in the same order as 2007 to be able to compare them 
+    sorted_values_2024 = count_2024.reindex(sorted_values_2007.index)
+
+    difference= sorted_values_2024 - sorted_values_2007
+    colors = [ 'lightseagreen' if val>0 else 'coral' for val in difference]
+
+    fig = plt.figure(figsize=(10,6))
+    ax = sns.barplot(x= difference.index, y = difference, palette= colors)
+    ax.set_xticklabels([])
+
+    ax.set(title='Difference in Number of links per article', 
+        xlabel='Source Articles', ylabel='#links/article in 2024 - 2007')
+
+    ax.set_ylim([-100,250])
+    ax.get_xaxis().set_visible(False)
+
+    legend_elements = [
+        Patch(facecolor='lightseagreen', edgecolor='black', label='More links in 2024'),
+        Patch(facecolor='coral', edgecolor='black', label='Less links in 2024')
+    ]
+    plt.legend(handles=legend_elements, title='Legend', loc='upper right')
+
+    plt.tight_layout()
     plt.show()
 
 def creating_graph(links_list, articles_list) :
@@ -80,4 +119,6 @@ def plotting_difference_heatmap(spm1, spm2) :
     data = computing_difference_spm(spm1,spm2)
 
     sns.heatmap(data, vmin=-9, vmax=9, cmap='vlag')
+    plt.xlabel('articles list')
+    plt.ylabel('articles list')
     plt.title('Difference in shortest path')

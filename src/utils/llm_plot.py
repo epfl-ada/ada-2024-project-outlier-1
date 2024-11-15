@@ -1,6 +1,7 @@
 import numpy as np
 
 import plotly.graph_objects as go
+import matplotlib.pyplot as plt
 
 def generate_performance_scatter(avglen,models=['llama3_2007','mistral_2007']):
     """
@@ -55,3 +56,22 @@ def generate_performance_scatter(avglen,models=['llama3_2007','mistral_2007']):
 )
 
     fig.show()
+
+def plot_path_length_distribution(df, model,log_scale=True):
+    """
+    Plot the path length distribution of the model in 2007 and 2024
+
+    Args:
+        df: DataFrame
+        model: str
+    """
+
+    plt.figure(figsize=(10,5))
+    sns.histplot(df[f'{model}_2007'], kde=True, color='red',log_scale=log_scale)
+    sns.histplot(df[f'{model}_2024'], kde=True, color='blue',log_scale=log_scale)
+    plt.legend([f'{model} 2007', f'{model} 2024'])
+    plt.xlabel('Path Length (log scale)')
+    plt.ylabel('Count')
+    plt.title(f'Path Length Distribution of {model} 2007 and 2024')
+
+    plt.show()

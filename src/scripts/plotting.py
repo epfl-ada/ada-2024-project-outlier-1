@@ -12,7 +12,8 @@ __all__ = ['plot_average_links_per_page',
            'creating_graph',
            'computing_shortest_path_matrix',
            'computing_difference_spm',
-           'plotting_difference_heatmap']
+           'plotting_difference_heatmap',
+           'get_sankey_data']
 
 
 def plot_average_links_per_page(links2007, links2024) :
@@ -122,3 +123,55 @@ def plotting_difference_heatmap(spm1, spm2) :
     plt.xlabel('articles list')
     plt.ylabel('articles list')
     plt.title('Difference in shortest path')
+
+
+
+def get_sankey_data(df, categories, type_data, suffix_fn='1'):
+    """
+    Produce formatted datafile to create a sankey diagram on https://app.flourish.studio/. 
+
+    Args:
+        df (pandas.DataFrame): dataframe containing the data
+        categories (pandas.DataFrame): dataframe containing the categories of each article
+        type_data (str): f for finished paths df, unf for unfinished paths df and links for links df
+
+    Returns:
+        distrib (np.array of float): distribution of the number of links/paths between categories
+        tot_links (int): total number of links/paths
+    """
+
+    if type_data=='f' or type_data=='unf':
+        col1 = 'source_cat'
+        col2 = 'target_cat'
+        # to be done in data treatment
+        # df['source_cat'] = df_cat.main_category.loc[df.start].values
+        # df['target_cat'] = df_cat.main_category.loc[df.end].values
+        # if type_data=='unf':
+        #     df['target_cat'] = df_cat.main_category.loc[df.target].values
+    elif type_data=='links':
+        col1 = 'catSource'
+        col2 = 'catTarget'
+    else:
+        print('type_data parameter unrecognized, return -1')
+        return -1
+    
+
+
+    grouped_by_cat = df.groupby([col1, col2])#.apply(lambda x: x).drop(columns=['source_cat', 'target_cat']).sort_index()
+    # grouped_by_cat
+
+    cat = list(categories.main_category.value_counts().sort_index().index)
+
+    # main_cat
+    source = []
+    target = []
+    value = []
+    for (scat, ecat), group in grouped_by_cat:
+        source.append(scat)
+        target.append(ecat)
+        value.append(len(group))
+    sankey_data_finished = pd.DataFrame(zip(source, target, value), columns=['source', 'target', 'val'])
+    sankey_data_finished.to_csv(f'./data/sankey/sankey_data_{type_data}_v'+suffix_fn+'.csv', index=False)
+    distrib = np.array(value)/sum(value)
+    tot_links = sum(value)
+    return distrib, tot_links

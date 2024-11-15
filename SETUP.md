@@ -14,12 +14,9 @@ cd <project repo>
 conda create -n <env_name> python=3.11 or ...
 conda activate <env_name>
 
-
 # install requirements
 pip install -r pip_requirements.txt
 ```
-
-
 
 ### How to use the library
 
@@ -31,13 +28,6 @@ Tell us how the code is arranged, any explanations goes here.
 2) Follow instruction to use [Ollama container](https://hub.docker.com/r/ollama/ollama) on CPU/GPU
 3) Run model locally : `docker exec -it <container name> ollama run <model>`
    e.g. (`docker exec -it ollama ollama run mistral`)
-
-
-
-
-
-
-
 
 
 ## Project Structure
@@ -62,3 +52,4 @@ The directory structure of new project looks like this:
 └── README.md
 ```
 
+NB : Please add the `plaintext_articles` folder from original Wikispeedia dataset to the `data/2007/plain_text_articles/` directory.

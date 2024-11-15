@@ -6,8 +6,8 @@ matplotlib==3.8.4
 wandb==0.17.2
 numpy
 ollama
-os
 plotly==5.24.1 
 seaborn
 pandas
 ipykernel
+networkx[default]

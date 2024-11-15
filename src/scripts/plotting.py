@@ -155,11 +155,7 @@ def get_sankey_data(df, categories, type_data, suffix_fn='1'):
         print('type_data parameter unrecognized, return -1')
         return -1
     
-
-
     grouped_by_cat = df.groupby([col1, col2])#.apply(lambda x: x).drop(columns=['source_cat', 'target_cat']).sort_index()
-    # grouped_by_cat
-
     cat = list(categories.main_category.value_counts().sort_index().index)
 
     # main_cat

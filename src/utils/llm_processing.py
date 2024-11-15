@@ -1,6 +1,25 @@
 import itertools
 
+def fix_path(path):
+    """
+    Fix the path by removing the last element if it is '<'
 
+    Args:
+        path (str) : path to fix
+
+    Returns:
+        path (str) : fixed path
+    """
+    result_stack = []
+
+    for element in path:
+        if element == '<':
+            if result_stack:  # Remove the last element only if the stack is not empty
+                result_stack.pop()
+        else:
+            result_stack.append(element)
+
+    return result_stack
 
 def process_player_path_data(df,min_games=10,max_length=50):
     """

@@ -2,6 +2,7 @@ import numpy as np
 
 import plotly.graph_objects as go
 import matplotlib.pyplot as plt
+import seaborn as sns
 
 def generate_performance_scatter(avglen,models=['llama3_2007','mistral_2007']):
     """
@@ -70,7 +71,7 @@ def plot_path_length_distribution(df, model,log_scale=True):
     sns.histplot(df[f'{model}_2007'], kde=True, color='red',log_scale=log_scale)
     sns.histplot(df[f'{model}_2024'], kde=True, color='blue',log_scale=log_scale)
     plt.legend([f'{model} 2007', f'{model} 2024'])
-    plt.xlabel('Path Length (log scale)')
+    plt.xlabel(f'Path Length { "(log scale)" if log_scale else ""}')
     plt.ylabel('Count')
     plt.title(f'Path Length Distribution of {model} 2007 and 2024')
 

@@ -16,3 +16,8 @@ nest_asyncio
 requests
 beautifulsoup4
 scikit-learn
+tqdm
+Wikipedia-API
+node2vec
+sentence-transformers
+gensim

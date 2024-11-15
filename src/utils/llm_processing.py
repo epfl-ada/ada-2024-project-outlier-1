@@ -1,6 +1,6 @@
 import itertools
 
-def fix_path(path):
+def fix_player_path(path):
     """
     Fix the path by removing the last element if it is '<'
 

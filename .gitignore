@@ -30,6 +30,7 @@ ipython_config.py
 __pycache__/
 *.py[cod]
 *$py.class
+src/script/__pycache__
 
 # C extensions
 *.so

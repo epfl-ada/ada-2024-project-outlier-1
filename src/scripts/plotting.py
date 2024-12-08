@@ -5,6 +5,8 @@ from scipy.stats import ttest_ind
 import seaborn as sns
 import networkx as nx
 from matplotlib.patches import Patch
+import random
+
 
 
 __all__ = ['plot_average_links_per_page',
@@ -13,7 +15,8 @@ __all__ = ['plot_average_links_per_page',
            'computing_shortest_path_matrix',
            'computing_difference_spm',
            'plotting_difference_heatmap',
-           'get_sankey_data']
+           'get_sankey_data',
+           'plot_distribution_path_length']
 
 
 def plot_average_links_per_page(links2007, links2024) :
@@ -70,12 +73,19 @@ def plot_difference_links_article(links2007, links2024) :
     fig = plt.figure(figsize=(10,6))
     ax = sns.barplot(x= difference.index, y = difference, palette= colors)
     ax.set_xticklabels([])
+ 
+    ax.set_ylim([-100,250])
+
+    for tick in ax.get_xticklines():
+        tick.set_visible(False)
+
+    for label in ax.get_xticklabels():
+        label.set_visible(False)
+
+    ax.set_xlabel("Source Articles")
 
     ax.set(title='Difference in Number of links per article', 
         xlabel='Source Articles', ylabel='#links/article in 2024 - 2007')
-
-    ax.set_ylim([-100,250])
-    ax.get_xaxis().set_visible(False)
 
     legend_elements = [
         Patch(facecolor='lightseagreen', edgecolor='black', label='More links in 2024'),
@@ -171,3 +181,67 @@ def get_sankey_data(df, categories, type_data, suffix_fn='1'):
     distrib = np.array(value)/sum(value)
     tot_links = sum(value)
     return distrib, tot_links
+
+
+def plot_distribution_path_length(G_2007, G_2024, n_samples=100, start_hops=0, n_hops=10):
+    """
+    Plots the distribution of reachable nodes within a given number of hops in a graph, 
+    based on a sample of nodes and comapre between 2007 and 2024 
+
+    Parameters:
+        - G_2007 (networkx.Graph): The 2007 graph to analyze.
+        - G_2024 (networkx.Graph): The 2024 graph to analyze.
+        - n_samples (int, optional): The number of nodes to sample.
+        - start_hops (int, optional): The starting number of hops.
+        - n_hops (int, optional): The maximum number of hops.
+    Returns:
+        - None
+    """
+
+    assert start_hops <= n_hops
+    sampled_nodes = random.sample(list(G_2007.nodes) ,n_samples)
+    G_2007_sampled = G_2007.subgraph(sampled_nodes)
+    
+    sampled_nodes = random.sample(list(G_2024.nodes) ,n_samples)
+    G_2024_sampled = G_2024.subgraph(sampled_nodes)
+
+    average_reachable_nodes_2007 = {}
+    average_reachable_nodes_2024 = {}
+
+
+    # to see the intersection of the average reachable nodes at 6 hops
+    intersection_hops_2007 = 0
+    intersection_hops_2024 = 0
+
+
+    for i in range(start_hops,n_hops+1):
+        average_reachable_nodes_2007[i] = np.mean([len(nx.single_source_shortest_path_length(G_2007, node, cutoff=i)) for node in G_2007_sampled.nodes()])
+        average_reachable_nodes_2024[i] = np.mean([len(nx.single_source_shortest_path_length(G_2024, node, cutoff=i)) for node in G_2024_sampled.nodes()])
+
+        if i == 6:
+            intersection_hops_2007 = average_reachable_nodes_2007[i]
+            
+        if i == 5:
+            intersection_hops_2024 = average_reachable_nodes_2024[i]
+
+    average_reachable_nodes_2007 = average_reachable_nodes_2007.items()
+    x,y_2007 = zip(*average_reachable_nodes_2007)
+
+    average_reachable_nodes_2024 = average_reachable_nodes_2024.items()
+    x,y_2024 = zip(*average_reachable_nodes_2024)
+
+    sns.set_theme()
+
+    plt.plot(x,y_2007)
+    plt.plot(x,y_2024)
+
+    plt.xlabel('Number of hops')
+    plt.ylabel('Average of node reachable')
+    plt.title('Average number of reachable nodes')
+    plt.axhline(y=intersection_hops_2007, color='r', linestyle='--')
+    plt.axvline(x=6, color='r', linestyle='--')
+
+    plt.axhline(y=intersection_hops_2024, color='orange', linestyle='--')
+    plt.axvline(x=5, color='orange', linestyle='--')
+
+    plt.legend(['2007', '2024'])

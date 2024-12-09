@@ -15,13 +15,16 @@ __all__ = ['plot_average_links_per_page',
            'computing_shortest_path_matrix',
            'computing_difference_spm',
            'plotting_difference_heatmap',
+           'plot_degree_distribution',
            'get_sankey_data',
            'plot_distribution_path_length']
 
 
-def plot_average_links_per_page(links2007, links2024) :
+def plot_average_links_per_page(links2007, links2024, articles, graph_based=False) :
     '''
     bar plot of the mean number of links per pages, and compute independent t test 
+    Graph based approach can be used when graph_based is set to True to take isolated nodes into account 
+    Otherwise just computes the distribution based on the links list
     '''
     summary2007 = links2007.groupby(by='linkSource')
     summary2024 = links2024.groupby(by='linkSource')
@@ -36,12 +39,21 @@ def plot_average_links_per_page(links2007, links2024) :
     # p value = 1.04 e-305 << alpha = 0.05, the two distributions have significantly different means
     fig = plt.figure(figsize=(8,4))
 
-    plt.subplot(1, 2, 1)
-    ax = sns.histplot(summary2007.count()['linkTarget'], kde=True, stat='density', color='orange', label='2007')
-    ax = sns.histplot(summary2024.count()['linkTarget'], kde=True, stat='density', color='blue', label='2024')
-    ax.set(title='Distribution of the number of links per article', xlabel='number of links', ylabel='pages')
-    plt.ylabel('Total number of hyperlinks')
-    plt.legend()
+    if(graph_based) : 
+        ### creating Graphs 
+        G_2007 = creating_graph(links2007, articles)
+        G_2024 = creating_graph(links2024, articles)
+
+        plt.subplot(1, 2, 1)
+        plot_degree_distribution(G_2007, G_2024)
+    else :
+        # Distributions only using the number of links 
+
+        plt.subplot(1, 2, 1)
+        ax = sns.histplot(summary2007.count()['linkTarget'], kde=True, stat='density', color='orange', label='2007')
+        ax = sns.histplot(summary2024.count()['linkTarget'], kde=True, stat='density', color='blue', label='2024')
+        ax.set(title='Distribution of the number of links per article', xlabel='number of links', ylabel='number of pages')
+        plt.legend()
 
     plt.subplot(1, 2, 2)
     plt.bar(x=['2007', '2024'], height= [np.mean(summary2007.count()), np.mean(summary2024.count())])
@@ -182,6 +194,20 @@ def get_sankey_data(df, categories, type_data, suffix_fn='1'):
     tot_links = sum(value)
     return distrib, tot_links
 
+def plot_degree_distribution(G_2007, G_2024):
+    """
+    Plots distribution of the degrees of the nodes, using a graph based approach
+    """
+    degree_sequence_2007 = sorted((d for n, d in G_2007.degree()), reverse=True)
+    degree_sequence_2024 = sorted((d for n, d in G_2024.degree()), reverse=True)
+
+    ax = sns.histplot(degree_sequence_2024,
+                    kde=True, stat='density', color='blue', label='2024')
+    ax = sns.histplot(degree_sequence_2007,
+                    kde=True, stat='density', color='orange', label='2007')
+
+    ax.set(title='Distribution of the degrees of nodes', xlabel='degree', ylabel='fraction of nodes')
+    plt.legend()
 
 def plot_distribution_path_length(G_2007, G_2024, n_samples=100, start_hops=0, n_hops=10):
     """

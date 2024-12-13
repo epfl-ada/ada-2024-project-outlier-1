@@ -23,7 +23,7 @@ __all__ = ['plot_average_links_per_page',
            'plotting_difference_heatmap',
            'plot_degree_distribution',
            'get_sankey_data',
-           'plot_distribution_path_length'
+           'plot_distribution_path_length',
            'get_sankey_data',
            'get_multistep_sankey_data',
            'plotly_save_to_html',

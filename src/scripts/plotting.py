@@ -22,14 +22,14 @@ __all__ = ['plot_average_links_per_page',
            'computing_difference_spm',
            'plotting_difference_heatmap',
            'plot_degree_distribution',
-           'get_sankey_data',
            'plot_distribution_path_length',
            'get_sankey_data',
            'get_multistep_sankey_data',
            'plotly_save_to_html',
            'plot_heatmap',
            'colorscale_cmap',
-           'get_palette_cat']
+           'get_palette_cat',
+           'plot_cat_pie_chart']
 
 
 def plot_average_links_per_page(links2007, links2024, articles, graph_based=False) :
@@ -163,7 +163,7 @@ def plotting_difference_heatmap(spm1, spm2) :
 
 def get_sankey_data(df, categories, type_data, get_stats=False, suffix_fn='1'):
     """
-    Produce formatted datafile to create a sankey diagram on https://app.flourish.studio/. 
+    Produce formatted datafile to create a sankey diagram on https://app.flourish.studio/ or a heatmap. 
 
     Args:
         df (pandas.DataFrame): dataframe containing the data
@@ -175,24 +175,15 @@ def get_sankey_data(df, categories, type_data, get_stats=False, suffix_fn='1'):
         tot_links (int): total number of links/paths
     """
 
-    if type_data=='f' or type_data=='unf':
-        col1 = 'source_cat'
-        col2 = 'target_cat'
-        # to be done in data treatment
-        # df['source_cat'] = df_cat.main_category.loc[df.start].values
-        # df['target_cat'] = df_cat.main_category.loc[df.end].values
-        # if type_data=='unf':
-        #     df['target_cat'] = df_cat.main_category.loc[df.target].values
-    elif type_data=='links':
+    if type_data=='f' or type_data=='unf' or type_data=='links':
         col1 = 'catSource'
         col2 = 'catTarget'
     else:
-        print('type_data parameter unrecognized, return -1')
+        print('get_sankey_data function: type_data parameter unrecognized, return -1')
         return -1
     
     cats = sorted(list(categories.main_category.unique()))
 
-    # main_cat
     source = []
     target = []
     value = []
@@ -264,27 +255,10 @@ def get_multistep_sankey_data(df, categories, get_stats=False, suffix_fn='1'):
     step_to = []
 
     
-    # for scat, group in df.groupby(['source_cat']):
-    #     for ecat, egroup in group.groupby(['end_cat']):
-    #         source.append(scat[0])
-    #         target.append(ecat[0])
-    #         value_start2end.append(len(egroup))
-    #         step_from.append(0)
-    #         step_to.append(1)
-
-
-    # for ecat, group in df.groupby(['end_cat']):
-    #     for tcat, tgroup in group.groupby(['target_cat']):
-    #         source.append(ecat[0])
-    #         target.append(tcat[0])
-    #         value_end2target.append(len(tgroup))
-    #         step_from.append(1)
-    #         step_to.append(2)
-    
     for scat in cats:
-        group = df.loc[df.source_cat == scat]
+        group = df.loc[df.catSource == scat]
         for ecat in cats:
-            egroup = group.loc[group.end_cat == ecat]
+            egroup = group.loc[group.catEnd == ecat]
             source.append(scat)
             target.append(ecat)
             value_start2end.append(len(egroup))
@@ -294,9 +268,9 @@ def get_multistep_sankey_data(df, categories, get_stats=False, suffix_fn='1'):
 
 
     for ecat in cats:
-        group = df.loc[df.end_cat == ecat]
+        group = df.loc[df.catEnd == ecat]
         for tcat in cats:
-            tgroup = group.loc[group.target_cat == tcat]
+            tgroup = group.loc[group.catTarget == tcat]
             source.append(ecat)
             target.append(tcat)
             value_end2target.append(len(tgroup))
@@ -526,3 +500,27 @@ def plot_distribution_path_length(G_2007, G_2024, n_samples=100, start_hops=0, n
     plt.axvline(x=5, color='orange', linestyle='--')
 
     plt.legend(['2007', '2024'])
+
+
+def plot_cat_pie_chart(categories):
+    counts = categories.main_category.value_counts()
+    fancy_palette = get_palette_cat()
+    categories['count'] = categories.main_category.apply(lambda x: counts.loc[x])
+
+    fig = go.Figure(layout=go.Layout(width=800, height=500))
+
+    fig.add_trace(go.Pie(
+                        labels=counts.index,
+                        values=counts.values,
+                        marker_colors=counts.index.map(fancy_palette).fillna("white"),
+                        showlegend=False,
+                        texttemplate=['%{label}<br>%{percent}' if counts.loc[c]/sum(counts)>0.05 else '%{label} %{percent}' for c in counts.index]
+                        )
+    )            
+            
+    fig.update_traces(textposition=['inside' if counts.loc[c]/sum(counts)>0.05 else 'outside' for c in counts.index], textinfo='percent+label')
+    fig.update_layout(font_size = 18,
+                    title = dict({'text': f"Main categories", 'x': 0.5, 'xanchor': 'center'}),
+                    margin=dict(l=20, r=20, t=50, b=20))
+                    
+    plotly_save_to_html(fig, 'pie_cat')

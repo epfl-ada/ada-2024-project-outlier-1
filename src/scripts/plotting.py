@@ -27,6 +27,7 @@ __all__ = ['plot_average_links_per_page',
            'get_multistep_sankey_data',
            'plotly_save_to_html',
            'plot_heatmap',
+           'plot_heatmap_differences',
            'colorscale_cmap',
            'get_palette_cat',
            'plot_cat_pie_chart']
@@ -299,7 +300,7 @@ def plotly_save_to_html(fig, fn):
 
 
 
-def plot_heatmap(vals, names, num_links, type_plot, vmin=0, vmax=0, gamma=0.47):
+def plot_heatmap(vals, names, num_links, type_plot, vmin=0, vmax=0, gamma=0.47, stats=False):
     fig = go.Figure()
 
     if type_plot=='links':
@@ -329,7 +330,7 @@ def plot_heatmap(vals, names, num_links, type_plot, vmin=0, vmax=0, gamma=0.47):
 
     all_to_cat_counts = np.array([np.sum(vals*num_links, axis=0)]*len(vals))
     cat_to_all_counts = np.array([ [i]*len(vals) for i in np.sum(vals*num_links, axis=1)])
-    
+
     fig.add_trace(go.Heatmap(
         z = vals*100,
         x = names,
@@ -365,6 +366,68 @@ def plot_heatmap(vals, names, num_links, type_plot, vmin=0, vmax=0, gamma=0.47):
         fig.data[0].update(zmin=0, zmax=vmax)
 
     plotly_save_to_html(fig, fn)
+
+    if stats:
+        return dict(zip(names, np.sum(vals*100, axis=0))), dict(zip(names, np.sum(vals*100, axis=1)))
+
+
+
+def plot_heatmap_differences(distrib1, distrib2, names, tot_links_1, vmin=0, vmax=0, gamma=0):
+    fig = go.Figure()
+
+    fn = f'categories_differences'
+    title = f'Difference in distribution of start and target articles<br>categories between finished and unfinished paths'
+    xlabel = 'Target article category'
+    ylabel = 'Source article category'
+
+    distrib1[distrib1==0] = 1/tot_links_1
+    vals = ((distrib1-distrib2)/distrib1)
+
+    all_to_cat_perc = np.array([np.sum(vals*100, axis=0)]*len(vals))
+    cat_to_all_perc = np.array([ [i]*len(vals) for i in np.sum(vals*100, axis=1)])
+
+    all_to_cat_counts = np.array([np.sum(vals, axis=0)]*len(vals))
+    cat_to_all_counts = np.array([ [i]*len(vals) for i in np.sum(vals, axis=1)])
+    
+
+    fig.add_trace(go.Heatmap(
+        z = vals*100,
+        x = names,
+        y = names,
+        customdata = np.dstack((all_to_cat_perc, cat_to_all_perc)),
+        hovertemplate = "* → %{x}: %{customdata[0]:0.3f}% <br>" +
+            "%{y} → *: %{customdata[1]:0.3f}% <br>" +
+            "%{y} → %{x}: %{z:0.3f}%  <extra></extra>",
+        hoverlabel_font_size = 18,
+        colorscale='RdBu',
+        zmid=0
+        # colorscale = colorscale_cmap('plasma', vals*100, gamma, vmin, vmax),
+    ))
+    
+    fig.update_layout(
+        width = 800,
+        height = 800,
+        font_size = 18,
+        yaxis_scaleanchor="x",
+        title = dict(
+            text = title,
+            xanchor = 'center',
+            x = 0.5)
+    )
+
+    fig.update_xaxes(
+        title_text = xlabel
+    )
+    
+    fig.update_yaxes(
+        title_text = ylabel
+    )
+
+    if vmax!=0:
+        fig.data[0].update(zmin=0, zmax=vmax)
+
+    plotly_save_to_html(fig, fn)
+
 
 
 def colorscale_cmap(cmap_name, data, gamma, vmin, vmax):

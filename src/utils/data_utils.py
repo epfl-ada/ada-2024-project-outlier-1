@@ -1,7 +1,13 @@
 import pandas as pd
 import numpy as np
+from scipy.stats import chi2_contingency
 
-__all__ = ['delete_duplicates_cat', 'art_not_in_cat', 'articles_in_common', 'paths_with_cat_only', 'compute_stats_games']
+__all__ = ['delete_duplicates_cat',
+           'art_not_in_cat',
+           'articles_in_common',
+           'cleaned_paths',
+           'compute_stats_games',
+           'chi2_contingency_test']
 
 def delete_duplicates_cat(df_cat, relationships):
     """
@@ -49,7 +55,7 @@ def articles_in_common(list1, list2) :
     return set(list1['linkSource']).intersection(list2['linkSource'])
 
 
-def paths_with_cat_only(df_f, df_unf, df_cat, art_to_remove, verbose=True):
+def cleaned_paths(df_f, df_unf, df_cat, art_to_remove, verbose=True):
     # df_cat = df_cat.set_index('article', drop=True)
     
     init_rows_f = df_f.shape[0]
@@ -57,17 +63,17 @@ def paths_with_cat_only(df_f, df_unf, df_cat, art_to_remove, verbose=True):
     
     df_f = df_f.drop(df_f[df_f.start.isin(art_to_remove)].index)
     df_f = df_f.drop(df_f[df_f.end.isin(art_to_remove)].index)
-    df_f['source_cat'] = df_cat.main_category.loc[df_f.start].values
-    df_f['target_cat'] = df_cat.main_category.loc[df_f.end].values    
-    # df_f['source_cat'] = df_cat.main_category.loc[df_f.start == df_cat.article].values
-    # df_f['target_cat'] = df_cat.main_category.loc[df_f.end == df_cat.article].values
-    
+    df_f['catSource'] = df_cat.main_category.loc[df_f.start].values
+    df_f['catTarget'] = df_cat.main_category.loc[df_f.end].values    
+    df_f['length'] = df_f.path.str.len()
+
     df_unf = df_unf.drop(df_unf[df_unf.start.isin(art_to_remove)].index)
     df_unf = df_unf.drop(df_unf[df_unf.target.isin(art_to_remove)].index)
-    df_unf['source_cat'] = df_cat.main_category.loc[df_unf.start].values
-    df_unf['target_cat'] = df_cat.main_category.loc[df_unf.target].values
-    # df_unf['source_cat'] = df_cat.main_category.loc[df_unf.start == df_cat.article].values
-    # df_unf['target_cat'] = df_cat.main_category.loc[df_unf.target == df_cat.article].values
+    df_unf['catSource'] = df_cat.main_category.loc[df_unf.start].values
+    df_unf['catTarget'] = df_cat.main_category.loc[df_unf.target].values
+    df_unf['catEnd'] = df_cat.main_category.loc[df_unf.end].values
+    df_unf['length'] = df_unf.path.str.len()
+    df_unf = df_unf.loc[df_unf.length>1]
 
     if verbose:
         # let's check how much data has been discarded
@@ -93,3 +99,7 @@ def compute_stats_games(df, type_path):
     df_stats[f'max_{type_path}_path'] = df['path'].str.len().groupby(level=[0,1]).max()
     
     return df_stats
+
+def chi2_contingency_test(counts1, counts2):
+    test = chi2_contingency(np.vstack((counts1, counts2)))
+    return test.pvalue, test.statistic

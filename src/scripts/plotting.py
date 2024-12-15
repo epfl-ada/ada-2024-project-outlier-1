@@ -12,6 +12,7 @@ from collections import defaultdict
 import plotly.express as px
 import plotly.io as pio
 import plotly.graph_objects as go
+from plotly.subplots import make_subplots
 from math import log10
 
 
@@ -21,12 +22,15 @@ __all__ = ['plot_average_links_per_page',
            'computing_shortest_path_matrix',
            'computing_difference_spm',
            'plotting_difference_heatmap',
+           'computing_mean_shortest_path',
            'plot_degree_distribution',
            'plot_distribution_path_length',
+           'plot_pagerank',
            'get_sankey_data',
            'get_multistep_sankey_data',
            'plotly_save_to_html',
            'plot_heatmap',
+           'plot_heatmap_differences',
            'colorscale_cmap',
            'get_palette_cat',
            'plot_cat_pie_chart']
@@ -138,11 +142,12 @@ def computing_shortest_path_matrix(G, articles_list) :
 
 def computing_difference_spm(spm1, spm2):
     ''' 
-    Function to compare the two shortest path matrix. Infinite values are replaced by 0 to avoid having inf to 4 hops being considered as inf. 
+    Function to compare the two shortest path matrix. Infinite values are replaced by 10 (maximum shortest path value) 
+    to avoid having inf to 4 hops being considered as inf. 
     Returns the difference of spm2 - spm1
     '''
-    spm1 = np.where(spm1 == float('inf'), 0., spm1)
-    spm2 = np.where(spm2 == float('inf'), 0., spm2)
+    spm1 = np.where(spm1 == float('inf'), 10, spm1)
+    spm2 = np.where(spm2 == float('inf'), 10, spm2)
     return spm2 - spm1
 
 def plotting_difference_heatmap(spm1, spm2) :
@@ -153,12 +158,111 @@ def plotting_difference_heatmap(spm1, spm2) :
     '''
     data = computing_difference_spm(spm1,spm2)
 
-    sns.heatmap(data, vmin=-9, vmax=9, cmap='vlag')
+    sns.heatmap(data, vmin=-9, vmax=9, cmap='icefire')
     plt.xlabel('articles list')
     plt.ylabel('articles list')
     plt.title('Difference in shortest path')
 
+def computing_mean_shortest_path(spm) : 
+    spm_values = [x if x != np.inf else 0 for x in spm]
+    return np.mean(spm_values)
 
+def plot_pagerank(G, year, threshold_value=0.005) :
+    '''
+    plot the network of the top threshold_value% nodes based on pagerank centrality using Plotly
+    '''
+    # computing pagerank
+    pagerank = nx.pagerank(G)
+    # Determine the threshold for top 20% of PageRank values
+    threshold = sorted(pagerank.values(), reverse=True)[int(len(pagerank) * threshold_value)]
+
+    # Filter nodes based on the threshold
+    filtered_nodes = [node for node, score in pagerank.items() if score > threshold]
+
+    # Create a subgraph with only the filtered nodes
+    G_filtered = G.subgraph(filtered_nodes)
+
+    # Get positions for nodes using a spring layout
+    pos = nx.kamada_kawai_layout(G_filtered)
+
+    # Extract node and edge data for Plotly
+    node_x = []
+    node_y = []
+    node_size = []
+    node_color = []
+    node_text = []
+
+    for node in G_filtered.nodes():
+        x, y = pos[node]
+        node_x.append(x)
+        node_y.append(y)
+        node_size.append(pagerank[node] * 10000)  # Scale node size by PageRank
+        node_color.append(pagerank[node])  # Use PageRank as color
+        node_text.append(f"{node}<br>PageRank: {pagerank[node]:.4f}")
+
+    edge_x = []
+    edge_y = []
+
+    for edge in G_filtered.edges():
+        x0, y0 = pos[edge[0]]
+        x1, y1 = pos[edge[1]]
+        edge_x.append(x0)
+        edge_x.append(x1)
+        edge_x.append(None)  # Break between edges
+        edge_y.append(y0)
+        edge_y.append(y1)
+        edge_y.append(None)
+
+    # Create the edge trace
+    edge_trace = go.Scatter(
+        x=edge_x,
+        y=edge_y,
+        line=dict(width=0.5, color="#888"),
+        hoverinfo="none",
+        mode="lines"
+    )
+
+    # Create the node trace with text
+    node_trace = go.Scatter(
+        x=node_x,
+        y=node_y,
+        mode="markers+text",  # Display both markers and text
+        marker=dict(
+            size=node_size,
+            color=node_color,
+            colorscale="Viridis",
+            showscale=True,
+            colorbar=dict(title="PageRank"),
+            line_width=2
+        ),
+        text=node_text,  # Node names
+        textposition="middle center",  # Position text above the nodes
+        textfont=dict(size=10, color="black"),  # Font customization
+        hoverinfo="text"
+    )
+
+    # Create the Plotly figure
+    fig = go.Figure(data=[edge_trace, node_trace],
+                    layout=go.Layout(
+                        title="Interactive Network Graph for "+year
+                        +" (Top "+str(threshold_value*100)+"% by PageRank)",
+                        titlefont_size=16,
+                        showlegend=False,
+                        hovermode="closest",
+                        margin=dict(b=0, l=0, r=0, t=40),
+                        annotations=[dict(
+                            text="Node size and color proportional to PageRank",
+                            showarrow=False,
+                            xref="paper",
+                            yref="paper",
+                            x=0.005,
+                            y=-0.002
+                        )],
+                        xaxis=dict(showgrid=False, zeroline=False),
+                        yaxis=dict(showgrid=False, zeroline=False)
+                    ))
+
+    fig.show()
 
 
 def get_sankey_data(df, categories, type_data, get_stats=False, suffix_fn='1'):
@@ -299,7 +403,7 @@ def plotly_save_to_html(fig, fn):
 
 
 
-def plot_heatmap(vals, names, num_links, type_plot, vmin=0, vmax=0, gamma=0.47):
+def plot_heatmap(vals, names, num_links, type_plot, vmin=0, vmax=0, gamma=0.47, stats=False):
     fig = go.Figure()
 
     if type_plot=='links':
@@ -329,7 +433,7 @@ def plot_heatmap(vals, names, num_links, type_plot, vmin=0, vmax=0, gamma=0.47):
 
     all_to_cat_counts = np.array([np.sum(vals*num_links, axis=0)]*len(vals))
     cat_to_all_counts = np.array([ [i]*len(vals) for i in np.sum(vals*num_links, axis=1)])
-    
+
     fig.add_trace(go.Heatmap(
         z = vals*100,
         x = names,
@@ -365,6 +469,68 @@ def plot_heatmap(vals, names, num_links, type_plot, vmin=0, vmax=0, gamma=0.47):
         fig.data[0].update(zmin=0, zmax=vmax)
 
     plotly_save_to_html(fig, fn)
+
+    if stats:
+        return dict(zip(names, np.sum(vals*100, axis=0))), dict(zip(names, np.sum(vals*100, axis=1)))
+
+
+
+def plot_heatmap_differences(distrib1, distrib2, names, tot_links_1, vmin=0, vmax=0, gamma=0):
+    fig = go.Figure()
+
+    fn = f'categories_differences'
+    title = f'Difference in distribution of start and target articles<br>categories between finished and unfinished paths'
+    xlabel = 'Target article category'
+    ylabel = 'Source article category'
+
+    distrib1[distrib1==0] = 1/tot_links_1
+    vals = ((distrib1-distrib2)/distrib1)
+
+    all_to_cat_perc = np.array([np.sum(vals*100, axis=0)]*len(vals))
+    cat_to_all_perc = np.array([ [i]*len(vals) for i in np.sum(vals*100, axis=1)])
+
+    all_to_cat_counts = np.array([np.sum(vals, axis=0)]*len(vals))
+    cat_to_all_counts = np.array([ [i]*len(vals) for i in np.sum(vals, axis=1)])
+    
+
+    fig.add_trace(go.Heatmap(
+        z = vals*100,
+        x = names,
+        y = names,
+        customdata = np.dstack((all_to_cat_perc, cat_to_all_perc)),
+        hovertemplate = "* → %{x}: %{customdata[0]:0.3f}% <br>" +
+            "%{y} → *: %{customdata[1]:0.3f}% <br>" +
+            "%{y} → %{x}: %{z:0.3f}%  <extra></extra>",
+        hoverlabel_font_size = 18,
+        colorscale='RdBu',
+        zmid=0
+        # colorscale = colorscale_cmap('plasma', vals*100, gamma, vmin, vmax),
+    ))
+    
+    fig.update_layout(
+        width = 800,
+        height = 800,
+        font_size = 18,
+        yaxis_scaleanchor="x",
+        title = dict(
+            text = title,
+            xanchor = 'center',
+            x = 0.5)
+    )
+
+    fig.update_xaxes(
+        title_text = xlabel
+    )
+    
+    fig.update_yaxes(
+        title_text = ylabel
+    )
+
+    if vmax!=0:
+        fig.data[0].update(zmin=0, zmax=vmax)
+
+    plotly_save_to_html(fig, fn)
+
 
 
 def colorscale_cmap(cmap_name, data, gamma, vmin, vmax):

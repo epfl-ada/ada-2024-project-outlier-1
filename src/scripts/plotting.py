@@ -262,8 +262,7 @@ def plot_pagerank(G, year, threshold_value=0.005) :
                         yaxis=dict(showgrid=False, zeroline=False)
                     ))
 
-    fig.show()
-
+    return fig
 
 def get_sankey_data(df, categories, type_data, get_stats=False, suffix_fn='1'):
     """

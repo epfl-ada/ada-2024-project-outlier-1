@@ -9,7 +9,7 @@ def check_if_in_CI(x,model):
     Returns:
         bool: True if the model performance is in the confidence interval of the player performance
     """
-    return ((x['mean']-x['std'])<=x[model]) and ((x['mean']+x['std'])>=x[model])
+    return ((x['mean']-x['std'])<=x[f"mean_{model}"]) and ((x['mean']+x['std'])>=x[f"mean_{model}"])
 
 
 def jaccard_similarity(x):

@@ -18,11 +18,16 @@ def generate_performance_scatter(avglen,models=['llama3_2007','mistral_2007']):
     # Add model performance
     for i,model in enumerate(models):
         fig.add_trace(go.Scatter(
-            x=avglen[model],
-            y=np.arange(len(avglen[model])),
+            x=avglen[f"mean_{model}"],
+            y=np.arange(len(avglen[f"mean_{model}"])),
             mode='markers',
             name=model + ' performance',
-            marker=dict(color=colors[i], symbol='x')
+            marker=dict(color=colors[i], symbol='x'),
+            error_x=dict(
+                type='data',
+                array=2*avglen[f"std_{model}"],
+                visible=True
+            )
         ))
     
     # Add Player mean with error bars
@@ -55,8 +60,13 @@ def generate_performance_scatter(avglen,models=['llama3_2007','mistral_2007']):
     height=2000,
     width=1000
 )
+    # Save the plot
+    fig.write_html("performance_scatter.html")
+
+    # Show the plot
 
     fig.show()
+
 
 def plot_path_length_distribution(df, model,log_scale=True):
     """
@@ -68,8 +78,8 @@ def plot_path_length_distribution(df, model,log_scale=True):
     """
 
     plt.figure(figsize=(10,5))
-    sns.histplot(df[f'{model}_2007'], kde=True, color='red',log_scale=log_scale)
-    sns.histplot(df[f'{model}_2024'], kde=True, color='blue',log_scale=log_scale)
+    sns.histplot(df[f'mean_{model}_2007'], kde=True, color='red',log_scale=log_scale)
+    sns.histplot(df[f'mean_{model}_2024'], kde=True, color='blue',log_scale=log_scale)
     plt.legend([f'{model} 2007', f'{model} 2024'])
     plt.xlabel(f'Path Length { "(log scale)" if log_scale else ""}')
     plt.ylabel('Count')

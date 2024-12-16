@@ -17,16 +17,19 @@ from math import log10
 
 
 __all__ = ['plot_average_links_per_page',
+           'plot_pagerank_distribution',
            'plot_difference_links_article',
            'creating_graph',
            'computing_shortest_path_matrix',
            'computing_difference_spm',
-           'plotting_difference_heatmap',
+           'plotting_difference_heatmap_sns',
+           'plotting_difference_heatmap_plotly',
            'computing_mean_shortest_path',
            'plot_degree_distribution',
            'plot_distribution_path_length',
            'plot_pagerank',
            'get_sankey_data',
+           'computing_scc_avg',
            'get_multistep_sankey_data',
            'plotly_save_to_html',
            'plot_heatmap',
@@ -78,6 +81,19 @@ def plot_average_links_per_page(links2007, links2024, articles, graph_based=Fals
 
     plt.tight_layout()
     plt.show()
+
+def plot_pagerank_distribution(pagerank_2007, pagerank_2024) :
+
+    # [[key, pagerank_2007[key]] for key in sorted_pr_2007]
+    sorted_pr_2007 = sorted(pagerank_2007, key = pagerank_2007.get, reverse=True)
+    sorted_pr_2024 = sorted(pagerank_2024, key = pagerank_2024.get, reverse=True)
+
+    fig = plt.figure(figsize=(15,5))
+
+    ax = sns.histplot([pagerank_2007[key] for key in sorted_pr_2007], kde=True, stat='density', color='orange', label='2007')
+    ax = sns.histplot([pagerank_2024[key] for key in sorted_pr_2024], kde=True, stat='density', color='blue', label='2024')
+    ax.set(title='Pagerank Centrality Distribution', xlabel='Pagerank value', ylabel='counts')
+    ax.set_xlim([0,0.004])
 
 def plot_difference_links_article(links2007, links2024) :
     '''
@@ -150,8 +166,9 @@ def computing_difference_spm(spm1, spm2):
     spm2 = np.where(spm2 == float('inf'), 10, spm2)
     return spm2 - spm1
 
-def plotting_difference_heatmap(spm1, spm2) :
+def plotting_difference_heatmap_sns(spm1, spm2) :
     '''
+    seaborn version--> see plotting_difference_heatmap_plotly for interactive visualisation
     Visualise the difference in shortest paths using a heatmap.
     Red : the path is shorter in spm2 than spm1
     Blue : the path is longer in spm2 than spm1
@@ -159,9 +176,33 @@ def plotting_difference_heatmap(spm1, spm2) :
     data = computing_difference_spm(spm1,spm2)
 
     sns.heatmap(data, vmin=-9, vmax=9, cmap='icefire')
-    plt.xlabel('articles list')
-    plt.ylabel('articles list')
+    plt.xlabel('Target Articles')
+    plt.ylabel('Source Articles')
     plt.title('Difference in shortest path')
+
+
+def plotting_difference_heatmap_plotly(spm1, spm2) :
+    '''
+    Plotly version, interactive
+    Visualise the difference in shortest paths using a heatmap.
+    Red : the path is shorter in spm2 than spm1
+    Blue : the path is longer in spm2 than spm1
+    '''
+    data = computing_difference_spm(spm1, spm2)
+
+    fig = go.Figure(data=go.Heatmap(
+                        z=data,
+                        colorscale='RdBu',
+                        zmin=-8,
+                        zmax=8))
+
+    fig.update_layout(title='Difference Heatmap in Shortest Path ',
+                    width=600,      # Set the width of the plot
+                    height=600,     # Set the height of the plot (same as width for square shape)
+                    xaxis=dict(scaleanchor="y"),
+                    xaxis_title= 'Target articles',
+                    yaxis_title= 'Source articles') # Synchronize scale of x and y axes
+    return fig 
 
 def computing_mean_shortest_path(spm) : 
     spm_values = [x if x != np.inf else 0 for x in spm]
@@ -263,6 +304,27 @@ def plot_pagerank(G, year, threshold_value=0.005) :
                     ))
 
     return fig
+
+def computing_scc_avg(G):
+    '''
+    Computes the Strongly Connected Components of given graph G and returns its overall average shortest path across SCCs
+    '''
+    SCC = list(nx.strongly_connected_components(G))
+
+    scc_avg_lengths = []
+    for scc in SCC:
+        subgraph = G.subgraph(scc)
+        
+        avg_length = nx.average_shortest_path_length(subgraph)
+        scc_avg_lengths.append(avg_length)
+
+    if scc_avg_lengths:
+        overall_avg = sum(scc_avg_lengths) / len(scc_avg_lengths)
+        print(f"Overall Average Shortest Path Length (across SCCs) : {overall_avg:.4f}")
+    else:
+        print("No strongly connected components in the graph.")
+
+    return SCC, overall_avg
 
 def get_sankey_data(df, categories, type_data, get_stats=False, suffix_fn='1'):
     """

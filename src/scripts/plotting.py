@@ -83,7 +83,9 @@ def plot_average_links_per_page(links2007, links2024, articles, graph_based=Fals
     plt.show()
 
 def plot_pagerank_distribution(pagerank_2007, pagerank_2024) :
-
+    '''
+    Plot the distributions of pageranks for the 2 years
+    '''
     # [[key, pagerank_2007[key]] for key in sorted_pr_2007]
     sorted_pr_2007 = sorted(pagerank_2007, key = pagerank_2007.get, reverse=True)
     sorted_pr_2024 = sorted(pagerank_2024, key = pagerank_2024.get, reverse=True)
@@ -175,7 +177,7 @@ def plotting_difference_heatmap_sns(spm1, spm2) :
     '''
     data = computing_difference_spm(spm1,spm2)
 
-    sns.heatmap(data, vmin=-9, vmax=9, cmap='icefire')
+    sns.heatmap(data, vmin=-9, vmax=9, cmap='coolwarm')
     plt.xlabel('Target Articles')
     plt.ylabel('Source Articles')
     plt.title('Difference in shortest path')
@@ -455,6 +457,9 @@ def get_multistep_sankey_data(df, categories, get_stats=False, suffix_fn='1'):
 
 
 def plotly_save_to_html(fig, fn):
+    '''
+    Saves given interactive figure to html
+    '''
     pio.show(fig)
     pie_html = pio.to_html(fig)
 

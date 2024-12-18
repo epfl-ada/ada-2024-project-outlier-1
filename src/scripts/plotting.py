@@ -28,16 +28,20 @@ __all__ = ['plot_average_links_per_page',
            'plot_degree_distribution',
            'plot_distribution_path_length',
            'plot_pagerank',
-           'get_sankey_data',
            'computing_scc_avg',
            'get_heatmap_data',
            'get_multistep_sankey_data',
            'plotly_save_to_html',
            'plot_heatmap',
+           'plot_heatmap_datastory',
            'plot_heatmap_differences',
            'colorscale_cmap',
            'get_palette_cat',
-           'plot_cat_pie_chart']
+           'plot_cat_pie_chart',
+           'interactive_plot_distrib_length_shortest_path',
+           'plot_distrib_number_links2target',
+           'plot_log_reg_coeff',
+           'plot_metrics']
 
 
 def plot_average_links_per_page(links2007, links2024, articles, graph_based=False) :
@@ -545,6 +549,97 @@ def plot_heatmap(vals, names, num_links, type_plot, vmin=0, vmax=0, gamma=0.47, 
         return dict(zip(names, np.sum(vals*100, axis=0))), dict(zip(names, np.sum(vals*100, axis=1)))
 
 
+def plot_heatmap_datastory(vals, names, num_links, type_plot, vmin=0, vmax=0, gamma=0.47):
+    fig = go.Figure()
+    w = 0
+    h = 0
+    if type_plot=='links':
+        fn = 'links_categories'
+        title = 'Category flows'
+        xlabel = 'Link in'
+        ylabel = 'Link out'
+    elif type_plot=='unf_start': 
+        fn = f'categories_unfinished_paths_start2end'
+        title = f'Categories of start and end articles for unfinished paths'
+        xlabel = 'End article category'
+        ylabel = 'Source article category'
+    elif type_plot=='unf_target': 
+        fn = f'categories_unfinished_paths_end2target'
+        title = f'Categories of end and target articles for unfinished paths'
+        xlabel = 'Target article category'
+        ylabel = 'End article category'
+    elif type_plot=='unf': 
+        fn = f'categories_{type_plot}inished_paths_start2target_datastory'
+        title = f'Categories of start and target<br>articles for {type_plot}inished paths'
+        xlabel = 'Target article category'
+        ylabel = ''
+        cb = True
+        w = 600
+        h = 800
+    elif type_plot=='f': 
+        fn = f'categories_{type_plot}inished_paths_start2target_datastory'
+        title = f'Categories of start and target<br>articles for {type_plot}inished paths'
+        xlabel = 'Target article category'
+        ylabel = 'Source article category'
+        cb = False
+        w = 750
+        h = 800
+
+
+    all_to_cat_perc = np.array([np.sum(vals*100, axis=0)]*len(vals))
+    cat_to_all_perc = np.array([ [i]*len(vals) for i in np.sum(vals*100, axis=1)])
+
+    all_to_cat_counts = np.array([np.sum(vals*num_links, axis=0)]*len(vals))
+    cat_to_all_counts = np.array([ [i]*len(vals) for i in np.sum(vals*num_links, axis=1)])
+
+    fig.add_trace(go.Heatmap(
+        z = vals*100,
+        x = names,
+        y = names,
+        customdata = np.dstack((np.round(vals*num_links,0), all_to_cat_perc, all_to_cat_counts, cat_to_all_perc, cat_to_all_counts)),
+        hovertemplate = "* → %{x}: %{customdata[1]:0.3f}%, %{customdata[2]} counts <br>" +
+            "%{y} → *: %{customdata[3]:0.3f}%, %{customdata[4]} counts <br>" +
+            "%{y} → %{x}: %{z:0.3f}%, %{customdata[0]} counts <extra></extra>",
+        hoverlabel_font_size = 18,
+        colorscale = colorscale_cmap('plasma', vals*100, gamma, vmin, vmax),
+        showscale = cb
+    ))
+    
+    fig.update_layout(
+        width = w if w else 800,
+        height = h if h else 800,
+        font_size = 18,
+        yaxis_scaleanchor="x",
+        title = dict(
+            text = title,
+            xanchor = 'center',
+            x = 0.5),
+    )
+
+    fig.update_coloraxes(showscale=cb) 
+    fig.update(layout_coloraxis_showscale=cb) 
+  
+
+    fig.update_xaxes(
+        title_text = xlabel
+    )
+    
+    if type_plot == 'unf':
+        fig.update_yaxes(
+            tickmode = 'array',
+            tickvals = names,
+            ticktext = ['']*len(names)
+        )
+
+    fig.update_yaxes(
+        title_text = ylabel
+    )
+
+    if vmax!=0:
+        fig.data[0].update(zmin=0, zmax=vmax)
+
+    plotly_save_to_html(fig, fn)
+
 
 def plot_heatmap_differences(distrib1, distrib2, names, tot_links_1, vmin=0, vmax=0, gamma=0):
     fig = go.Figure()
@@ -761,3 +856,394 @@ def plot_cat_pie_chart(categories):
                     margin=dict(l=20, r=20, t=50, b=20))
                     
     plotly_save_to_html(fig, 'pie_cat')
+
+
+def interactive_plot_distrib_length_shortest_path(all_games, fn='distrib_path_lengths_wrt_shortest_path'):
+    fig = go.Figure()
+    minSP=1
+    x_title = 0.7; y_title = 1.3
+    x_sr = 1.03; y_sr = 0.5
+    x_giveup = x_sr; y_giveup = 0.2
+    x_tot = x_sr; y_tot = 0.6
+
+    success_rates = []
+    early_stops = []
+    tot_nbr_paths = []
+    for step in range(minSP, 8):
+        datafinished = all_games.loc[(all_games.shortest_path==step) & (all_games['finished?']==1)]
+        counts_f = datafinished.groupby('length').size().sort_index(ascending=True)
+
+        fig.add_trace(
+            go.Histogram(
+                visible=False,
+                histnorm='probability',
+                marker=dict(color='rgba(25, 25, 255, 0.5)'),
+                name=f'{len(datafinished.length)} finished paths',
+                xbins=dict(start=np.min(datafinished.length.values),
+                        size=1,
+                        end=np.max(datafinished.length.values)),
+                x=datafinished.length.values,
+                customdata=[f"{c:>5} finished paths" for c in counts_f],
+                hovertemplate='%{customdata} <extra></extra>',
+            )
+        )
+
+        dataunfinished = all_games.loc[(all_games.shortest_path==step) & (all_games['finished?']==0)]
+        counts_unf = dataunfinished.groupby('length').size().sort_index(ascending=True)
+
+        early_stop = dataunfinished.loc[(dataunfinished.length<step)]
+        early_stops.append(early_stop.shape[0]/dataunfinished.shape[0]*100)
+        tot_nbr_paths.append(datafinished.shape[0]+dataunfinished.shape[0])
+        success_rate = (datafinished.shape[0] / (datafinished.shape[0] + dataunfinished.shape[0])) * 100
+        success_rates.append(success_rate)
+        
+        fig.add_trace(
+            go.Histogram(
+                visible=False,
+                histnorm='probability',
+                marker=dict(color='rgba(255, 25, 25, 0.5)'),
+                name=f'{len(dataunfinished.length)} unfinished paths',
+                xbins=dict(start=np.min(dataunfinished.length.values),
+                        size=1,
+                        end=np.max(dataunfinished.length.values)),
+                x=dataunfinished.length.values,
+                customdata=[f"{c:>5} unfinished paths" for c in counts_unf],
+                hovertemplate='%{customdata} <extra></extra>',
+            )
+        )
+    
+        fig.add_trace(
+            go.Scatter(
+                visible=False,
+                marker=dict(color='rgba(0, 0, 0, 0.5)'),
+                name="shortest path",
+                x=[step+0.5, step+0.5],  # Replace `10` with the desired x-values for your line
+                y=[0, 1],  # Use numeric offsets
+                hoverinfo='skip',
+            )
+        )
+
+    # Make 1st trace visible
+    fig.data[0].visible = True
+    fig.data[1].visible = True
+    fig.data[2].visible = True
+
+    # Create and add slider
+    steps = []
+    for i in range(len(fig.data)//3):
+        step = dict(
+            method="update",
+            args=[{"visible": [False] * (len(fig.data))},
+                {"annotations": [dict(
+                            align="left",
+                            showarrow=False,
+                            xref="paper",
+                            yref="paper",
+                            y=y_sr,
+                            x=x_sr,
+                            xanchor="left",
+                            text=f"Success rate: {success_rates[i]:>5.2f}%"),
+
+                            dict(
+                            align="left",
+                            showarrow=False,
+                            xref="paper",
+                            yref="paper",
+                            y=y_giveup,
+                            x=x_giveup,
+                            xanchor="left",
+                            text=f"Pourcentage of failed games<br>shorter than the shortest<br>path: {early_stops[i]:>5.2f}%"),
+                            
+                            dict(
+                            align="left",
+                            showarrow=False,
+                            xref="paper",
+                            yref="paper",
+                            y=y_tot,
+                            x=x_tot,
+                            xanchor="left",
+                            text=f"Total number of path: {tot_nbr_paths[i]:>5.0f}"),
+
+                            dict(
+                            align="center",
+                            showarrow=False,
+                            xref="paper",
+                            yref="paper",
+                            y=y_title,
+                            x=x_title,
+                            font=dict(size=25),
+                            xanchor="center",
+                            text=f"Distribution of the players' path<br>lengths when the shortest path is {i+minSP}"), ]}
+                ],  # layout attribute
+            label = f'{i+minSP}',
+        )
+        step["args"][0]["visible"][3*i] = True  # Toggle i'th trace to "visible"
+        step["args"][0]["visible"][3*i+1] = True  # Toggle i'th trace to "visible"
+        step["args"][0]["visible"][3*i+2] = True  # Toggle i'th trace to "visible"
+        steps.append(step)
+
+    sliders = [dict(
+        active=10,
+        currentvalue={"prefix": "Shortest path: "},
+        pad={"t": 50},
+        steps=steps
+    )]
+
+    fig.update_layout(
+        autosize = False,
+        sliders=sliders,
+        barmode='overlay',
+        hovermode="x unified",
+        annotations=[dict(
+                            align="left",
+                            showarrow=False,
+                            xref="paper",
+                            yref="paper",
+                            y=y_sr,
+                            x=x_sr,
+                            xanchor="left",
+                            text=f"Success rate: {success_rates[0]:>8.2f}%"),
+                    dict(
+                            align="left",
+                            showarrow=False,
+                            xref="paper",
+                            yref="paper",
+                            y=y_giveup,
+                            x=x_giveup,
+                            xanchor="left",
+                            text=f"Pourcentage of failed games<br>shorter than the shortest<br>path: {early_stops[0]:>8.2f}%"),
+
+                    dict(
+                            align="left",
+                            showarrow=False,
+                            xref="paper",
+                            yref="paper",
+                            y=y_tot,
+                            x=x_tot,
+                            xanchor="left",
+                            text=f"Total number of path: {tot_nbr_paths[0]:>5.0f}"),
+                    dict(
+                            align="center",
+                            showarrow=False,
+                            xref="paper",
+                            yref="paper",
+                            y=y_title,
+                            x=x_title,
+                            font=dict(size=25),
+                            xanchor="center",
+                            text=f"Distribution of the players' path<br>lengths when the shortest path is {minSP}")],
+        
+        xaxis=dict(domain=[0, 1], range=[0, 30], autorange=False),
+        yaxis=dict(domain=[0, 1], range=[0, 0.5], autorange=False),
+        legend_itemwidth=50,  
+        margin=dict(l=20, r=80, t=100, b=30),
+        width=850, height=500, font_size=16
+    )
+
+    fig.update_xaxes(
+        title_text=f"Path length")
+
+    fig.update_yaxes(
+        title_text=f"Frequency"
+    )
+
+    if len(fn)>0:
+        plotly_save_to_html(fig, fn)
+    else:
+        fig.show()
+
+
+def plot_distrib_number_links2target(df, fn='distrib_links_to_target'):
+    fig = go.Figure(layout=go.Layout(width=400, height=500, font_size=16))
+    minSP=3
+    x_title = 0.7; y_title = 1.3
+    x_sr = 1.03; y_sr = 0.5
+    x_giveup = x_sr; y_giveup = 0.2
+    x_tot = x_sr; y_tot = 0.6
+
+
+    def hist_add_trace_ltt(finished):
+        data = df.loc[df['finished?']==finished].links_to_target
+
+        # bins = np.round(np.concatenate((np.arange(0, 6), np.logspace(0.778, 3, 20))), 0)
+        bins = np.round(np.logspace(0, 3, 20))[1:]
+        hist, edges = np.histogram(data.values, bins=bins)
+        
+        if finished:
+            n = 'finished'
+            c = 'rgba(25, 25, 255, 0.5)'
+            cd = [[edges[i], edges[i+1]-1, f" {hist[i]} {n} paths"] for i in range(len(hist))]
+            ht = "<b> Interval: [%{customdata[0]}, %{customdata[1]}] </b> <br>" + "%{customdata[2]} <extra></extra>"
+                
+        else:
+            n = 'unfinished'
+            c = 'rgba(255, 25, 25, 0.5)'
+            cd = [[edges[i], edges[i+1], f" {hist[i]} {n} paths"] for i in range(len(hist))]
+            ht = "%{customdata[2]} <extra></extra>"
+
+        counts = data.value_counts()
+        fig.add_trace(
+            go.Bar(
+                y=hist/sum(hist),
+                x=[(edges[i+1]+edges[i])*0.5 for i in range(len(edges)-1)],
+                marker=dict(color=c),
+                name=f'{len(data)} {n} paths',
+                customdata=cd,
+                hovertemplate=ht,
+                width=[(edges[i+1]-edges[i]) for i in range(len(edges)-1)]
+            )
+        )
+
+    hist_add_trace_ltt(1)
+    hist_add_trace_ltt(0)
+
+    fig.update_layout(
+        barmode='overlay',
+        hovermode="x unified",
+        width=800, height=500, font_size=18,
+        title = dict(text=f"Distribution of the number of links to the target article", x=0.5, xanchor='center'),
+        margin=dict(l=20, r=20, t=50, b=20)
+    )
+
+    fig.update_xaxes(
+        title_text=f"Number of direct links to target",
+        type='log',
+    )
+
+    fig.update_yaxes(
+        title_text=f"Frequency"
+    )
+
+    if len(fn)>0:
+        plotly_save_to_html(fig, fn)
+    else:
+        fig.show()
+
+
+def plot_log_reg_coeff(fit, fn='results_log_reg_cat', alpha=0.01, not_sign=False):
+    fig = go.Figure()
+
+    results = pd.DataFrame(fit.params.sort_values(), columns=['coeff'])
+    results['pvalue'] = results.apply(lambda x: fit.pvalues.loc[x.index])
+    
+    results['SEM'] = fit.bse
+    
+    def colored_text(color, text):
+        # color: hexadecimal
+        s = "<span style='color:" + str(color) + "'>" + str(text) + "</span>"
+        return s
+    
+    def get_names_colored(x):
+        y = []
+        fancy_palette = get_palette_cat()
+        fancy_palette['History'] = '#b8b83e'
+        for el in x:
+            idx_cat = el.find('_')+1
+            cat = el[idx_cat:]
+            if el.count('catSource')>0:
+                tmp = colored_text(fancy_palette[cat], f'Source article category = {cat}')
+            elif el.count('catTarget')>0:
+                tmp = colored_text(fancy_palette[cat], f'Target article category = {cat}')
+            else:
+                tmp = el 
+            y.append(tmp)
+        return y
+
+    def get_names(x):
+        y = []
+        fancy_palette = get_palette_cat()
+        fancy_palette['History'] = '#e6e63c'
+        for el in x:
+            idx_cat = el.find('_')+1
+            cat = el[idx_cat:]
+            if el.count('catSource')>0:
+                tmp = f'Source article category = {cat}'
+            elif el.count('catTarget')>0:
+                tmp = f'Target article category = {cat}'
+            else:
+                tmp = el 
+            y.append(tmp)
+        return y
+
+    ht = '<b>%{customdata[0]}:</b> <br> coeff = %{x:.3f}±%{customdata[2]:.3f}<br> pvalue = %{customdata[1]:.2e} <br> multiply the odds by %{customdata[3]:.2f} <extra></extra>'
+
+    significant = results.loc[results.pvalue<alpha]
+    fig.add_trace(
+        go.Bar(
+            y = get_names_colored(significant.index),
+            x = significant.coeff,
+            error_x = dict(type='data', array=significant.SEM*1.96),
+            orientation = 'h',
+            # marker_color = ['#ff8b8b' if r>=alpha else '#8b8bff' for r in results.pvalue.values],
+            marker_color = '#8b8bff',
+            customdata = [(i, j, k, l) for i, j, k, l in zip(get_names(significant.index), significant.pvalue.values, significant.SEM*1.96, np.exp(significant.coeff))],
+            hovertemplate = ht,
+            # hover_fontsize = 16,
+            name = f'pvalue < {alpha}'
+        )
+    )
+
+    if not_sign:
+        not_significant = results.loc[results.pvalue>=alpha]
+        fig.add_trace(
+            go.Bar(
+                y = get_names(not_significant.index),
+                x = not_significant.coeff,
+                error_x = dict(type='data', array=not_significant.SEM*1.96),
+                orientation = 'h',
+                marker_color = '#ff8b8b',
+                customdata = [(i, j, k) for i, j, k in zip(get_names(not_significant.index), not_significant.pvalue.values, not_significant.SEM*1.96)],
+                hovertemplate = ht,
+                name = f'pvalue ≥ {alpha}'
+            )
+        )
+
+    fig.update_layout(
+        width = 1000,
+        height = 500,
+        font_size = 18,
+        title = dict(text = 'Significant coefficients', x=0.5, xanchor='center', font=dict(size=25)),
+        hoverlabel=dict(bgcolor="#fdfdfd", font_size=14)
+    )
+    
+    if len(fn)>0:
+        plotly_save_to_html(fig, fn)
+    else:
+        fig.show()
+    
+
+def plot_metrics(metrics_, names, fn=''):
+    fig = go.Figure()
+
+    def plot_one_metric(val, x, name, fig):
+        fig.add_trace(go.Scatter(
+            x = x,
+            y = val,
+            name = name,
+            mode = 'lines'
+        ))
+
+    x = np.linspace(0, 1, len(metrics_[0]))
+    for m, n in zip(metrics_, names):
+        plot_one_metric(m, x, n, fig)
+
+    fig.update_layout(
+        barmode='overlay',
+        hovermode="x unified",
+        width=800, height=500, font_size=18,
+        title = dict(text=f"Metrics depending on the threshold value used", x=0.5, xanchor='center'),
+        margin=dict(l=20, r=20, t=50, b=20)  
+    )
+
+    fig.update_xaxes(
+        title_text=f"Threshold"
+    )
+
+    fig.update_yaxes(
+        title_text=f"Metric"
+    )
+
+    if len(fn)>0:
+        plotly_save_to_html(fig, fn)
+    else:
+        fig.show()

@@ -30,6 +30,7 @@ __all__ = ['plot_average_links_per_page',
            'plot_pagerank',
            'get_sankey_data',
            'computing_scc_avg',
+           'get_heatmap_data',
            'get_multistep_sankey_data',
            'plotly_save_to_html',
            'plot_heatmap',
@@ -332,7 +333,7 @@ def computing_scc_avg(G):
         
     return SCC, overall_avg, avg_length
 
-def get_sankey_data(df, categories, type_data, get_stats=False, suffix_fn='1'):
+def get_heatmap_data(df, categories, type_data, get_stats=False, suffix_fn='1'):
     """
     Produce formatted datafile to create a sankey diagram on https://app.flourish.studio/ or a heatmap. 
 

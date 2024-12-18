@@ -310,23 +310,27 @@ def plot_pagerank(G, year, threshold_value=0.005) :
 def computing_scc_avg(G):
     '''
     Computes the Strongly Connected Components of given graph G and returns its overall average shortest path across SCCs
+    Disconnected nodes average are not taken into account in the computation of the overall average shortest path
     '''
     SCC = list(nx.strongly_connected_components(G))
 
     scc_avg_lengths = []
+    avg_length = []
     for scc in SCC:
         subgraph = G.subgraph(scc)
         
-        avg_length = nx.average_shortest_path_length(subgraph)
-        scc_avg_lengths.append(avg_length)
+        avg_length.append( nx.average_shortest_path_length(subgraph))
+        scc_avg_lengths.append(avg_length[-1])
 
     if scc_avg_lengths:
-        overall_avg = sum(scc_avg_lengths) / len(scc_avg_lengths)
+        # delete values = 0 from the overall average
+        non_zero_lengths = [sp_avg for sp_avg in avg_length if sp_avg >0]
+        overall_avg = sum(non_zero_lengths) / len(non_zero_lengths)
         print(f"Overall Average Shortest Path Length (across SCCs) : {overall_avg:.4f}")
     else:
         print("No strongly connected components in the graph.")
-
-    return SCC, overall_avg
+        
+    return SCC, overall_avg, avg_length
 
 def get_sankey_data(df, categories, type_data, get_stats=False, suffix_fn='1'):
     """

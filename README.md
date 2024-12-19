@@ -22,7 +22,7 @@ This project mainly relies on comparing the performance of Wikispeedia players o
 
 ### Methods :
 
-In this project, we want to focus on the performances of Wikispeedia players, the changes that occurred in the structure of Wikipedia between 2007 and 2024 and the links between these two elements. These are two very different tasks that we however want to link and would like to analyze the effect the latter could have had on the former. We thus decided to split our approach as follow :
+In this project, we focus on the performances of Wikispeedia players, the changes that occurred in the structure of Wikipedia between 2007 and 2024 and the links between these two elements. These are two very different tasks that we however want to link and would like to analyze the effect the latter could have had on the former. We thus decided to split our approach as follow :
 
 1. Exploration and analysis of players’ performances in 2007
 
@@ -45,11 +45,11 @@ In this project, we want to focus on the performances of Wikispeedia players, th
 
     Once the data is fully retrieved, with the list of articles and links of 2024 exactly matching the list from 2007: 
 
-    - Analyze difference in structure between the two years
+    - Analyze difference in structure between the two years : comparison of the number of links per pages, average number of links.
 
-    - Compute and compare shortest path matrix using Floyd Warshall Algorithm
+    - Compute and compare shortest path matrix using Floyd Warshall Algorithm : comparison of the average shortest path between the two years and comparison of the average shortest path across strongly connected components.
 
-    - Find target names not linked in the paths in 2007 vs 2024 
+    - Assess Network differences : comparison of the average clustering coefficients, computation of the pagerank centrality of both networks, comparision of pageranks value for the most central nodes, comparison of the top 20 central nodes and comparison of the average node degree and reachability of the networks. 
 
 3. Consequences of Wikipedia’s changes in player’s performances
 
@@ -79,39 +79,23 @@ In this project, we want to focus on the performances of Wikispeedia players, th
 
     We would also like to try to mimic Wikispeedia gamers behavior to infer how humans would have performed on 2024 Wikispeedia. This task is not guaranteed to be feasible and will probably take a great amount of time. We reserve this idea in case of motivation and time resources.
 
-### Proposed Timeline :
+### Main Results :
 
-**22.11.2024**
-- Homework 2 (all)
+1.
 
-**29.11.2024**
+2. Wikipedia structure evolution : 
 
-- Finish Wikispeedia game performance analysis (Julia)
+    From our analysis, we observe that the structure of Wikipedia has evolved a lot in 2024. Many links are created which results in a better connectivity of the graph overall and a shorter average shortest path. We see that the network is less dominated by one very central node but has a more equally distributed centrality of main nodes. However the overall structure of the two networks is the same, with one big cluster being strongly connected and containing the majority of the articles. Even though both graphs are very different, it is hard to infer how this difference would impact the players in their game performance and we perform further analysis in part 3 to study this. 
 
-- Finish cleaning 2024 and comparison of the structure with 2007. Retrieve categories and plain text articles from 2024 (Eglantine + Gabrielle) 
+3. 
 
-- Start website (Anasse et Jan)
+4. 
 
-- Run analysis LLMs on 2007 (Jan)
 
-**06.12.2024**  
+### Group Contributions : 
 
-- Run analysis LLMs on clean 2024 (Jan)
-
-- Complete analysis of changes effects on game performance (all)
-
-- Put results of parts 1 to 3 on Website (Julia, Eglantine, Gabrielle, Anasse)
-
-**13.12.2024**
-
-- Finish writing the data story webpage (all)
-
-- Wrapping up the GitHub repository (all)
-
-**20.12.2024**
-
-- Handle Milestone P3 (all)
-
-### Questions for TAs : 
-
-- About the general organization of the GitHub repository, we are not sure what architecture would be the best according to you: we have created functions and utils for each part of this project especially for encapsulation of the notebook results. Do you think it would it be best to separate our functions and scripts in .py files for each part of the project (ie. part1.py, part2.py, …) or to separate them according to their use (ie. loaders.py, plots.py, writers.py, …) ? In both cases we will encounter some redundancies, so our concern is more about making the repository intuitive to navigate and clean.
+Julia Guignon : part 1 
+Anasse El Boudiri : part 3
+Jan Steiner : part 4
+Eglantine Vialaneix : scrapping of 2024 Wikipedia, preprocessing of 2024 data, part 2.0 
+Gabrielle Blouvac : part 2 

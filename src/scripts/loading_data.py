@@ -127,13 +127,21 @@ def load_spm_2007():
     
     return np.array(matrix)
 
-def loading_zipped_spm(): 
+def loading_zipped_spm(control=False): 
     '''
-    To load the zipped version of the Shortest Path Matrices already computed
+    To load the zipped version of the Shortest Path Matrices already computed for control or wikipedia graphs
     '''
-    zf = zipfile.ZipFile('./data/spm.zip')
+    if(control):
+        zf = zipfile.ZipFile('./data/control.zip')
+        control_spm_2007 = np.array(pd.read_csv(zf.open('control2007.csv')))
+        control_spm_2024 = np.array(pd.read_csv(zf.open('control2024.csv')))
 
-    spm_2007 = np.array(pd.read_csv(zf.open('spm2007.csv')))
-    spm_2024 = np.array(pd.read_csv(zf.open('spm2024.csv')))
+        return control_spm_2007, control_spm_2024
+    
+    else :
+        zf = zipfile.ZipFile('./data/spm.zip')
 
-    return spm_2007, spm_2024
+        spm_2007 = np.array(pd.read_csv(zf.open('spm2007.csv')))
+        spm_2024 = np.array(pd.read_csv(zf.open('spm2024.csv')))
+
+        return spm_2007, spm_2024

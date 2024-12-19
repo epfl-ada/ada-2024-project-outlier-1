@@ -43,7 +43,7 @@ In this project, we focus on the performances of Wikispeedia players, the change
     - Find and correct ambiguous and homonymous pages
 
 
-    Once the data is fully retrieved, with the list of articles and links of 2024 exactly matching the list from 2007: 
+    Once the data is fully and correctly retrieved, with the list of articles and links of 2024 exactly matching the list from 2007: 
 
     - Analyze difference in structure between the two years : comparison of the number of links per pages, average number of links.
 
@@ -98,4 +98,4 @@ Julia Guignon : part 1
 Anasse El Boudiri : part 3
 Jan Steiner : part 4
 Eglantine Vialaneix : scrapping of 2024 Wikipedia, preprocessing of 2024 data, part 2.0 
-Gabrielle Blouvac : part 2 
+Gabrielle Blouvac : part 2, created images for the datastory 

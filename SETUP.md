@@ -10,7 +10,7 @@ Also! Don't forget to check out the [website of our Datastory](https://titantek.
 ```bash
 # clone project
 git clone https://github.com/epfl-ada/ada-2024-project-outlier-1.git
-cd https://github.com/epfl-ada/ada-2024-project-outlier-1.git
+cd ada-2024-project-outlier-1
 
 # [OPTIONAL] create conda environment
 conda create -n <env_name> python=3.11 or ...

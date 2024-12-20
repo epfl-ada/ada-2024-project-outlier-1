@@ -106,6 +106,8 @@ In this project, we focus on the performances of Wikispeedia players, the change
 
     From the results of the LLMs on 2007 Wikipedia, we observed that llama3 mimic better the players than Mistral. We then played the games in 2024 with llama3 and observed that the performance of the LLMs is better in 2024 than in 2007. This is due to the fact that the structure of Wikipedia has evolved and is now more connected.
 
+Our analysis leads us to think that the players would be more performant on a Wikispeedia 2024 version. However, we would need some data from real players on the 2024 version to confirm it firmly.
+
 
 ### Group Contributions: 
 

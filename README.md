@@ -1,5 +1,8 @@
 # Back to the Future: Time-Traveling through Wikispeedia 
 
+### Link to our DataStory : 
+https://titantek.github.io/ada-outlier-datastory/
+
 ### Abstract
 
 After a few games of Wikispeedia, one can easily get discouraged: why is that game so difficult? Are you bad at the game or is the game too old for you? 
@@ -88,13 +91,16 @@ In this project, we focus on the performances of Wikispeedia players, the change
 ### Main Results:
 
 1. Factors of success:
+
     Some categories have a positive or negative influence the success rate. A longer shortest path decreases slightly the odds of success whereas the number of links to target strongly increases it. The model is not fully satisfying and could be improve if we had more data about the players and/or the games played.
 
 2. Wikipedia structure evolution: 
 
     From our analysis, we observe that the structure of Wikipedia has evolved a lot in 2024. Many links are created which results in a better connectivity of the graph overall and a shorter average shortest path. We see that the network is less dominated by one very central node but has a more equally distributed centrality of main nodes. However the overall structure of the two networks is the same, with one big cluster being strongly connected and containing the majority of the articles. Even though both graphs are very different, it is hard to infer how this difference would impact the players in their game performance and we perform further analysis in part 3 to study this. 
 
-3. 
+3. Changes in players paths and performances : 
+
+    We assess how the structural changes in Wikipedia impact the paths played in the 2007 dataset. The target link appear sooner in 2024 than in 2007 on the paths played, both for finished and unfinished paths. We use the similarity measure to compare the structures and see that similarity between articles is higher for 2024 than for 2007. This shows that the 2024 network might be more precise and intuitive to naviguate. 
 
 4. LLMs performance: 
 

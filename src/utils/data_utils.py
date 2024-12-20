@@ -220,7 +220,7 @@ def f1_score_neg(y_true, y_pred):
     return f1
 
 
-def get_relevant_metrics(ytrue, pred_proba, n=100):
+def get_relevant_metrics(ytrue, pred_proba, n=101):
     try:
         tmp = [[y[1]>i for y in pred_proba] for i in np.linspace(0, 1, n)]
     except:

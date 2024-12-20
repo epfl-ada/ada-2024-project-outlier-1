@@ -215,7 +215,7 @@ def _categorize_efficiency(diff):
         return 'No Change'
 
 
-def plot_comarison_length_path(df_data_finished, df_data_unfinished, title="Number of paths shortened in 2007 vs 2024"):
+def plot_comarison_length_path(df_data_finished, df_data_unfinished, title="Comparison of the length of the shortened paths between 2007 and 2024"):
     """
     Plot comparison between the shortened paths in 2007 and 2024 (in terms of length)
 
@@ -226,8 +226,7 @@ def plot_comarison_length_path(df_data_finished, df_data_unfinished, title="Numb
 
     Returns:
     - None
-    """
-        
+    """   
     df_data_finished['efficiency_diff'] = df_data_finished['distance2024'] - df_data_finished['distance2007']
     df_data_finished['efficiency_category'] = df_data_finished['efficiency_diff'].apply(_categorize_efficiency)
     category_counts_finished = df_data_finished['efficiency_category'].value_counts()
@@ -237,12 +236,13 @@ def plot_comarison_length_path(df_data_finished, df_data_unfinished, title="Numb
     category_counts_unfinished = df_data_unfinished['efficiency_category'].value_counts()
 
     # Reordering categories for consistent plotting
+    palette = sns.color_palette("deep", 3)
     categories_ordered = ['2007', 'No Change', '2024']
 
     category_counts_finished = category_counts_finished.reindex(categories_ordered)
     category_counts_unfinished = category_counts_unfinished.reindex(categories_ordered)
 
-    fig, axs = plt.subplots(1, 2, figsize=(12, 5), sharey=True)
+    fig, axs = plt.subplots(1, 2, figsize=(13, 6), sharey=True)
 
     sns.barplot(
         x=category_counts_unfinished.index,
@@ -254,11 +254,22 @@ def plot_comarison_length_path(df_data_finished, df_data_unfinished, title="Numb
 
     axs[0].set_title("Unfinished Paths")
     axs[0].set_ylabel("Number of Paths")
-    axs[0].set_xlabel("Efficiency Category")
     axs[0].set_ylim(0, 16000)
+    axs[0].set_xticklabels([])
+
 
     for i, v in enumerate(category_counts_unfinished.values):
         axs[0].text(i, v + 50, str(v), ha='center', color='black')
+
+    # add a legend for axs[0] to map 
+    #'2024' -> 'Path is shorter in 2024'
+    #'2007' -> 'Path is shorter in 2007'
+    #'No Change' -> 'No difference'
+    legend_elements = [
+        Patch(facecolor=palette[0], edgecolor='black', label='Path is shorter in 2007'),
+        Patch(facecolor='lightgray', edgecolor='black', label='No difference'),
+        Patch(facecolor=palette[1], edgecolor='black', label='Path is shorter in 2024')
+    ]
 
     sns.barplot(
         x=category_counts_finished.index,
@@ -270,12 +281,13 @@ def plot_comarison_length_path(df_data_finished, df_data_unfinished, title="Numb
 
     axs[1].set_title("Finished Paths")
     axs[1].set_ylabel("Number of Paths")
-    axs[1].set_xlabel("Efficiency Category")
     axs[1].set_ylim(0, 16000)
+    axs[1].set_xticklabels([])
 
     for i, v in enumerate(category_counts_finished.values):
         axs[1].text(i, v + 50, str(v), ha='center', color='black')
-
+    
+    axs[1].legend(handles=legend_elements, loc='upper right')
     plt.suptitle(title)
     plt.tight_layout()
     plt.show()

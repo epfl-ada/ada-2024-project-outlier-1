@@ -69,15 +69,19 @@ In this project, we focus on the performances of Wikispeedia players, the change
 
 4. Consequences on LLMs performance
 
-    By prompting and launching different LLMs models (Mistral and Llama) to play the game in both years, we would like to compare their performance. We need to:
+    We use Mistral and Llama3 models to play Wikispeedia in 2007. We then compare their performance to the one of the players in 2007. We need to:
 
-    - Set a precise and adequate metric to quantify the performance of the models. 
+    - Determine which games we choose to play with the LLMs
+    - Determine the maximum number of steps the LLMs can take
+    - Analyze how many games llama3 and Mistral found a path
+    - Analyze the path length distribution of the games played by the LLMs with the one of the players
+    - Compare the similarity of the paths found by the LLMs and the players with the Jaccard similarity
+  
+    Then based on the results of the comparison, we will choose the model that mimics the players the best and play the games in 2024. We will then compare the performance of the LLMs in 2024 to the one in 2007.
 
-    - Prompt engineer the queries to the models.
+    - Comparing the number of paths found by the LLMs in 2024 and 2007
+    - Comparing the path length distribution of the games played by the LLMs in 2024 and 2007
 
-    - Analyze the results and compare the differences in performance between both years, if any.
-
-    We would also like to try to mimic Wikispeedia gamers behavior to infer how humans would have performed on 2024 Wikispeedia. This task is not guaranteed to be feasible and will probably take a great amount of time. We reserve this idea in case of motivation and time resources.
 
 ### Main Results:
 
@@ -90,7 +94,9 @@ In this project, we focus on the performances of Wikispeedia players, the change
 
 3. 
 
-4. 
+4. LLMs performance: 
+
+    From the results of the LLMs on 2007 Wikipedia, we observed that llama3 mimic better the players than Mistral. We then played the games in 2024 with llama3 and observed that the performance of the LLMs is better in 2024 than in 2007. This is due to the fact that the structure of Wikipedia has evolved and is now more connected.
 
 
 ### Group Contributions: 

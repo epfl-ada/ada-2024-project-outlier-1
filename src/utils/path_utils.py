@@ -4,6 +4,7 @@ from tqdm import tqdm
 
 import seaborn as sns
 import matplotlib.pyplot as plt
+from matplotlib.patches import Patch
 
 
 def fix_path(path):
@@ -195,6 +196,7 @@ def create_comparison_finished_path(DATA_PATH, path_finished, df_link2007, df_li
     df_finished.to_csv(os.path.join(DATA_PATH, 'comparison_finished_path.csv'), index=False)
     return df_finished
 
+
 def _categorize_efficiency(diff):
     """
     Categorize the efficiency difference into 2007, No Change, or 2024 (tools for plotting)
@@ -213,7 +215,7 @@ def _categorize_efficiency(diff):
         return 'No Change'
 
 
-def plot_comarison_length_path(df_data_finished, df_data_unfinished, title="Paths shortened in 2007 vs 2024 (length)"):
+def plot_comarison_length_path(df_data_finished, df_data_unfinished, title="Number of paths shortened in 2007 vs 2024"):
     """
     Plot comparison between the shortened paths in 2007 and 2024 (in terms of length)
 
@@ -253,7 +255,7 @@ def plot_comarison_length_path(df_data_finished, df_data_unfinished, title="Path
     axs[0].set_title("Unfinished Paths")
     axs[0].set_ylabel("Number of Paths")
     axs[0].set_xlabel("Efficiency Category")
-    axs[0].set_ylim(0, 18000)
+    axs[0].set_ylim(0, 16000)
 
     for i, v in enumerate(category_counts_unfinished.values):
         axs[0].text(i, v + 50, str(v), ha='center', color='black')
@@ -269,7 +271,7 @@ def plot_comarison_length_path(df_data_finished, df_data_unfinished, title="Path
     axs[1].set_title("Finished Paths")
     axs[1].set_ylabel("Number of Paths")
     axs[1].set_xlabel("Efficiency Category")
-    axs[1].set_ylim(0, 18000)
+    axs[1].set_ylim(0, 16000)
 
     for i, v in enumerate(category_counts_finished.values):
         axs[1].text(i, v + 50, str(v), ha='center', color='black')
@@ -278,10 +280,11 @@ def plot_comarison_length_path(df_data_finished, df_data_unfinished, title="Path
     plt.tight_layout()
     plt.show()
 
-def plot_comparison_clicks_saved(df_data_finished, df_data_unfinished, title="Paths shortened in 2007 vs 2024 (clicks saved)"):
+
+def plot_comparison_clicks_saved(df_data_finished, df_data_unfinished, title="Number of clicks saved in 2007 vs 2024"):
     """
     Plot comparison between the shortened paths in 2007 and 2024 (in terms of clicks saved)
-    
+
     Parameters:
     - df_data_finished: the dataframe that contains the finished path, target, final_link2007, final_link2024, distance2007, and distance2024
     - df_data_unfinished: the dataframe that contains the unfinished path, target, final_link2007, final_link2024, distance2007, and distance2024
@@ -290,127 +293,62 @@ def plot_comparison_clicks_saved(df_data_finished, df_data_unfinished, title="Pa
     Returns:
     - None
     """
-    fig, axs = plt.subplots(1, 2, figsize=(12, 5), sharey=True)
+    sns.reset_defaults()
 
-    sns.kdeplot(df_data_unfinished['distance2007'],
-    label="2007",
-    color="#1f77b4",
-    fill=True,
-    alpha=0.5,
-    ax=axs[0]
-    )
+    df_diff_finished = df_data_finished['distance2024'] - df_data_finished['distance2007']
+    df_diff_finished.sort_values(inplace=True, ascending=False)
+    df_diff_finished = df_diff_finished[df_diff_finished != 0].reset_index(drop=True)
 
-    sns.kdeplot(df_data_unfinished['distance2024'],
-    label="2024",
-    color="#ff7f0e",
-    fill=True,
-    alpha=0.5,
-    ax=axs[0]
-    )
+    df_diff_unfinished = df_data_unfinished['distance2024'] - df_data_unfinished['distance2007']
+    df_diff_unfinished.sort_values(inplace=True, ascending=False)
+    df_diff_unfinished = df_diff_unfinished[df_diff_unfinished != 0].reset_index(drop=True)
 
-    axs[0].set_title("Unfinished Paths")
-    axs[0].set_xlabel("Number of Saved Clicks")
-    axs[0].set_ylabel("Density")
-    axs[0].legend(title="Wikipedia Version")
+    palette = sns.color_palette("deep", 2)
+    fig, axs = plt.subplots(2, 1, figsize=(10, 8))
 
-    sns.kdeplot(df_data_finished['distance2007'],
-    label="2007",
-    color="#1f77b4",
-    fill=True,
-    alpha=0.5,
-    ax=axs[1]
-    )
-
-    sns.kdeplot(df_data_finished['distance2024'],
-    label="2024",
-    color="#ff7f0e",
-    fill=True,
-    alpha=0.5,
-    ax=axs[1]
-    )
-
-    axs[1].set_title("Finished Paths")
-    axs[1].set_xlabel("Number of Saved Clicks")
-    axs[1].set_ylabel("Density")
-    axs[1].legend(title="Wikipedia Version")
-
-    plt.suptitle(title)
-    plt.tight_layout()
-    plt.show()
-
-
-def compare_shortened_path_plot(df_data, title="Comparison of shortened unfinished paths in 2007 vs 2024"):
-    """
-    Plot comparison between the shortened paths in 2007 and 2024
-
-    Parameters:
-    - df_data: the dataframe that contains the path, target, final_link2007, final_link2024, distance2007, and distance2024
-    - title: the title of the plot
-
-    Returns:
-    - None
-    """
-
-    # Categorize paths based on efficiency difference
-    def categorize_efficiency(diff):
-        if diff > 0:
-            return '2024'
-        elif diff < 0:
-            return '2007'
-        else:
-            return 'No Change'
+    colors = [palette[1] if x > 0 else palette[0] for x in df_diff_unfinished]
+    sns.barplot(x=df_diff_unfinished.index, y=df_diff_unfinished, palette=colors, hue=df_diff_unfinished.index, width=1, ax=axs[0])
     
-    df_data['efficiency_diff'] = df_data['distance2024'] - df_data['distance2007']
-    df_data['efficiency_category'] = df_data['efficiency_diff'].apply(categorize_efficiency)
+    axs[0].set_xticklabels([])
+    axs[0].set_xticks([])
+    axs[0].set_title("Unfinished Paths")
+    axs[0].set_ylabel("Number of Clicks Saved")
+    axs[0].set_xlabel("")
+    axs[0].set_xlim(-10, len(df_diff_unfinished) + 10)
 
-    # Aggregate data for the diverging bar chart
-    category_counts = df_data['efficiency_category'].value_counts()
+    area_unfinished_2007 = -1 * df_diff_unfinished[df_diff_unfinished < 0].sum()
+    area_unfinished_2024 = df_diff_unfinished[df_diff_unfinished > 0].sum()
 
-    # Reordering categories for consistent plotting
-    categories_ordered = ['2007', 'No Change', '2024']
-    category_counts = category_counts.reindex(categories_ordered)
+    legend_elements = [
+        Patch(facecolor=palette[1], edgecolor='black', label='More clicks saved in 2024 (area = {})'.format(area_unfinished_2024)),
+        Patch(facecolor=palette[0], edgecolor='black', label='More clicks saved in 2007 (area = {})'.format(area_unfinished_2007))
+    ]
+    
+    axs[0].legend(handles=legend_elements, loc='lower left')
+    
+    colors = [palette[1] if x > 0 else palette[0] for x in df_diff_finished]
+    sns.barplot(x=df_diff_finished.index, y=df_diff_finished, palette=colors, hue=df_diff_finished.index, width=1, ax=axs[1])
+    
+    axs[1].set_xticklabels([])
+    axs[1].set_xticks([])
+    axs[1].set_title("Finished Paths")
+    axs[1].set_ylabel("Number of Clicks Saved")
+    axs[1].set_xlabel("Game played")
+    axs[1].set_xlim(-50, len(df_diff_finished) + 50)
 
-    fig, ax = plt.subplots(2, 1, figsize=(10, 8), gridspec_kw={'height_ratios': [1, 2]})
+    idx = [0, 1, 2, 3, len(axs[1].patches) - 4, len(axs[1].patches) - 3, len(axs[1].patches) - 2, len(axs[1].patches) - 1]
+    for i in idx:
+        axs[1].patches[i].set_width(5)
 
-    sns.barplot(
-    x=category_counts.index,
-    y=category_counts.values,
-    palette=["#1f77b4", "#cccccc", "#ff7f0e"],  # Blue, Grey, Orange
-    ax=ax[0],
-    hue=category_counts.index
-    )
+    area_finished_2007 = -1 * df_diff_finished[df_diff_finished < 0].sum()
+    area_finished_2024 = df_diff_finished[df_diff_finished > 0].sum()
 
-    ax[0].set_title("Paths shortened in 2007 vs 2024")
-    ax[0].set_ylabel("Number of Paths")
-    ax[0].set_xlabel("Efficiency Category")
-    ax[0].set_ylim(0, 18000)
+    legend_elements = [
+        Patch(facecolor=palette[1], edgecolor='black', label='More clicks saved in 2024 (area = {})'.format(area_finished_2024)),
+        Patch(facecolor=palette[0], edgecolor='black', label='More clicks saved in 2007 (area = {})'.format(area_finished_2007))
+    ]
 
-    for i, v in enumerate(category_counts.values):
-        ax[0].text(i, v + 50, str(v), ha='center', color='black')
-
-    # remove distance2007 = 0 and distance2024 = 0
-    df_data = df_data[(df_data['distance2007'] != 0) | (df_data['distance2024'] != 0)]
-
-    sns.kdeplot(df_data['distance2007'],
-    label="2007",
-    color="#1f77b4",
-    fill=True,
-    alpha=0.5,
-    ax=ax[1]
-    )
-
-    sns.kdeplot(df_data['distance2024'],
-    label="2024",
-    color="#ff7f0e",
-    fill=True,
-    alpha=0.5,
-    ax=ax[1]
-    )
-
-    ax[1].set_title("Distribution of click saved in 2007 vs 2024")
-    ax[1].set_xlabel("Number of Saved Clicks")
-    ax[1].set_ylabel("Density")
-    ax[1].legend(title="Wikipedia Version")
+    axs[1].legend(handles=legend_elements, loc='lower left')
 
     plt.suptitle(title)
     plt.tight_layout()

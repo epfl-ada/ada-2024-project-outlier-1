@@ -73,7 +73,9 @@ In this project, we focus on the performances of Wikispeedia players, the change
 
     - Determine which games (start and target articles) we choose to play with the LLMs
     - Determine the maximum number of steps the LLMs can take
-    - Analyze for how many games Llama3 and Mistral found a winning path 
+    - Make the LLMs play the games by first giving the context of the game with an example of path with a reasoning for the choice of the path. 
+    - Then let the LLMs play the game by giving the start article and the options of links to follow.
+    - Analyze for how many games Llama3 and Mistral successfully completed
     - Analyze the path length distribution of the games played by the LLMs with the one of the players
     - Compare the similarity of the paths found by the LLMs and the players with the Jaccard similarity
   

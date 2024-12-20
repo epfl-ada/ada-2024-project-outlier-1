@@ -116,7 +116,20 @@ def get_summaries2007(article_path, path_2007, csv_name, load=True):
     summaries2007.to_csv(os.path.join(path_2007, csv_name), index=False, encoding='utf8')
     return summaries2007
 
-def get_summaries2024(article_df, path_2024, csv_name, load=True):
+
+def get_summaries2024(article_df_names2024, path_2024, csv_name, load=True):
+    """
+    Get the summaries of the articles in the wikispeedia 2024 with wikipedia api
+
+    Parameters:
+    - article_df_names2024: the dataframe that contains the article old names (2007) and the new names (2024)
+    - path_2024: the path to the folder to save the csv file
+    - csv_name: the name of the csv file to save the summaries
+    - load: whether to load the summaries or get them from wikipedia api
+
+    Returns:
+    - summaries2024: the dataframe that contains the article names and the summaries
+    """
 
     if load:
         return pd.read_csv(os.path.join(path_2024, csv_name))
@@ -124,41 +137,38 @@ def get_summaries2024(article_df, path_2024, csv_name, load=True):
     wiki_wiki = wikipediaapi.Wikipedia('ada (anasse.elboudiri@epfl.ch)', 'en')
 
     summaries2024 = {'article' : [], 'content' : []}
-
-    for article in article_df['article']:
-        page = wiki_wiki.page(article)
+    for old_name, new_name in article_df_names2024[["article", "new_name"]].values:
+        page = wiki_wiki.page(new_name)
         if page.exists():
-            summaries2024['article'].append(article)
-            summaries2024['content'].append(page.summary)
-
-    # article names that are different in 2007 and 2024
-    old_names = ["Athletics_%28track_and_field%29",
-                "Bionicle__Mask_of_Light",
-                "Directdebit",
-                "Newshounds",
-                "Star_Wars_Episode_IV__A_New_Hope",
-                "Wikipedia_Text_of_the_GNU_Free_Documentation_License",
-                "X-Men__The_Last_Stand"]
-
-    new_names = ["Track_and_field",
-                "Bionicle:_Mask_of_Light",
-                "Direct_debit",
-                "News_Hounds",
-                "Star_Wars_(film)",
-                "Wikipedia:Text_of_the_GNU_Free_Documentation_License",
-                "X-Men:_The_Last_Stand"]
-
-    for old, new in zip(old_names, new_names):
-        page = wiki_wiki.page(new)
-        if page.exists():
-            summaries2024['article'].append(unquote(old))
+            summaries2024['article'].append(old_name)
             summaries2024['content'].append(page.summary)
     
     summaries2024 = pd.DataFrame(summaries2024)
     summaries2024.to_csv(os.path.join(path_2024, csv_name), index=False, encoding='utf8')
     return summaries2024
 
-def get_links_similarity(DATA, path2007, path2024, article_path_txt, articles, G_2007, G_2024, df_link2007, df_link2024, load=True):
+
+def get_links_similarity(DATA, path2007, path2024, article_path_txt, article_df_names2024, G_2007, G_2024, df_link2007, df_link2024, load_similarity=True, load=True):
+    """
+    Get the similarity between the links using node2vec and SBERT embeddings
+
+    Parameters:
+    - DATA: the path to the data folder
+    - path2007: the path to the wikispeedia 2007 dataset folder
+    - path2024: the path to the wikispeedia 2024 dataset folder
+    - article_path_txt: the path to the plain text article text files folder
+    - article_df_names2024: the dataframe that contains the article old names (2007) and the new names (2024)
+    - G_2007: the graph of the wikispeedia 2007 dataset
+    - G_2024: the graph of the wikispeedia 2024 dataset
+    - df_link2007: the dataframe that contains the links of the wikispeedia 2007 dataset
+    - df_link2024: the dataframe that contains the links of the wikispeedia 2024 dataset
+    - load_similarity: whether to load the similarities or calculate them
+    - load: whether to load the links or calculate them
+
+    Returns:
+    - df_link2007: the dataframe that contains the links of the wikispeedia 2007 dataset with the similarities
+    - df_link2024: the dataframe that contains the links of the wikispeedia 2024 dataset with the similarities
+    """
 
     if load:
         return pd.read_csv(os.path.join(path2007, 'links2007_similarity.csv')), pd.read_csv(os.path.join(path2024, 'links2024_similarity.csv'))
@@ -178,13 +188,14 @@ def get_links_similarity(DATA, path2007, path2024, article_path_txt, articles, G
     df_link2024['n2v_similarity'] = df_link2024.apply(lambda x: n2v_cosine_similarities_2024[list(G_2024.nodes()).index(x['linkSource']), 
                                                                                         list(G_2024.nodes()).index(x['linkTarget'])], axis=1)
     
-    summaries2007 = get_summaries2007(article_path_txt, path2007, 'summaries2007.csv')
-    summaries2024 = get_summaries2024(articles, path2024, 'summaries2024.csv')
+    summaries2007 = get_summaries2007(article_path_txt, path2007, 'summaries2007.csv', load=load_similarity)
+    summaries2024 = get_summaries2024(article_df_names2024, path2024, 'summaries2024.csv', load=load_similarity)
 
     model = SentenceTransformer('all-MiniLM-L6-v2')
 
     sbert_embeddings_2007 = {article: model.encode(text) for article, text in zip(summaries2007['article'], summaries2007['content'])}
     sbert_embeddings_2024 = {article: model.encode(text) for article, text in zip(summaries2024['article'], summaries2024['content'])}
+    
     sbert_cosine_similarities_2007 = get_cosine_similarities(sbert_embeddings_2007)
     sbert_cosine_similarities_2024 = get_cosine_similarities(sbert_embeddings_2024)
 
@@ -204,6 +215,15 @@ def get_links_similarity(DATA, path2007, path2024, article_path_txt, articles, G
 
 
 def plot_similarity_distributions(similarities):
+    """
+    Plot the similarity distributions of the node2vec and SBERT embeddings
+
+    Parameters:
+    - similarities: the dataframe that contains the similarities
+
+    Returns:
+    - None
+    """
     fig, axs = plt.subplots(2, 1, figsize=(10, 8))
 
     sns.histplot(similarities['n2v_similarity_2007'], ax=axs[0], color='blue', kde=True, label='2007')
@@ -227,12 +247,28 @@ def plot_similarity_distributions(similarities):
     plt.show()
 
 
-def plot_similarity_distribution(similarity):
-    plt.figure(figsize=(12, 6))
-    sns.histplot(similarity['similarity_2007'], kde=True, color='blue', label='2007')
-    sns.histplot(similarity['similarity_2024'], kde=True, color='red', label='2024')
-    plt.xlabel('Similarity')
-    plt.ylabel('Frequency')
-    plt.title('Similarity Distribution')
-    plt.legend()
+def plot_similarity_distribution(similarities):
+    """
+    Plot the similarity distribution (node2vec and SBERT embeddings)
+
+    Parameters:
+    - similarity: the dataframe that contains the similarities
+
+    Returns:
+    - None
+    """
+    fig, axs = plt.subplots(2, 1, figsize=(10, 6), gridspec_kw={'height_ratios': [1, 2]})
+
+    sns.histplot(similarities['similarity_2007'], kde=True, color='blue', label='2007', ax=axs[1])
+    sns.histplot(similarities['similarity_2024'], kde=True, color='red', label='2024', ax=axs[1])
+    axs[1].set_xlabel('Similarity')
+    axs[1].set_ylabel('Frequency')
+    axs[1].legend()
+
+    colors = {'similarity_2007': 'blue', 'similarity_2024': 'red'}
+    sns.boxplot(data=similarities, orient='h', ax=axs[0], palette=colors)
+    axs[0].set_xlabel('Similarity')
+
+    plt.tight_layout()
+    plt.suptitle('Similarity Distribution', y=1.02, fontsize=14)
     plt.show()

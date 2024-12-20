@@ -69,11 +69,11 @@ In this project, we focus on the performances of Wikispeedia players, the change
 
 4. Consequences on LLMs performance
 
-    We use Mistral and Llama3 models to play Wikispeedia in 2007. We then compare their performance to the one of the players in 2007. We need to:
+    We use Mistral and Llama3 models to simulate playing performance on Wikispeedia. We then compare their performance to the one of the players in 2007. To do so, we need to:
 
-    - Determine which games we choose to play with the LLMs
+    - Determine which games (start and target articles) we choose to play with the LLMs
     - Determine the maximum number of steps the LLMs can take
-    - Analyze how many games llama3 and Mistral found a path
+    - Analyze for how many games Llama3 and Mistral found a winning path 
     - Analyze the path length distribution of the games played by the LLMs with the one of the players
     - Compare the similarity of the paths found by the LLMs and the players with the Jaccard similarity
   
@@ -101,8 +101,14 @@ In this project, we focus on the performances of Wikispeedia players, the change
 
 ### Group Contributions: 
 
-Julia Guignon: part 1, layout of the website
-Anasse El Boudiri: part 3
-Jan Steiner: part 4
-Eglantine Vialaneix: scrapping of 2024 Wikipedia, preprocessing of 2024 data, part 2.0 
-Gabrielle Blouvac: part 2, created images for the datastory 
+Gabrielle Blouvac (AKA: Our Official Graphic Designer): part 2, created images for the datastory
+
+Anasse El Boudiri (AKA: The Pie-Chart Hater): part 3, bonus: convinced the team to choose this Dataset <3
+
+Julia Guignon (AKA: The Plotly Toxic Lover): part 1, layout of the website
+
+Jan Steiner (AKA: The LLM genius): part 4, bonus: saver of the website content bar
+
+Eglantine Vialaneix (AKA: The Scrapping Expert): scrapping expert of 2024 Wikipedia, preprocessing of 2024 data, part 2.0, layout of the website
+
+All: READ_ME, proof-reading, homeworks

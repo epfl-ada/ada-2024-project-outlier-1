@@ -1,4 +1,5 @@
 import itertools
+import pandas as pd
 
 def fix_player_path(path):
     """
@@ -129,3 +130,31 @@ def post_processing(x):
     x = remove_consecutive_duplicates(x)
     x = remove_periodic_loop(x)
     return x
+
+def combined_finished_unfinished(path_finished, path_unfinished):
+    """
+    Combine the finished and unfinished paths
+
+    Args:
+        path_finished (pandas dataframe): dataframe containing the finished paths
+        path_unfinished (pandas dataframe): dataframe containing the unfinished paths
+
+    Returns:
+        by_path (pandas dataframe): dataframe containing
+    """
+    path_finished.path = path_finished.path.str.split(';')
+    path_finished["length"] = path_finished.path.map(len) 
+    path_finished['start'] = path_finished.path.str[0]
+    path_finished['end'] = path_finished.path.str[-1]
+    path_unfinished.path = path_unfinished.path.str.split(';')
+    path_unfinished["start"] = path_unfinished.path.str[0]
+    path_unfinished["end"] = path_unfinished.target
+    path_finished["finished"] = 1
+    path_unfinished["finished"] = 0
+    path_finished["count"] = 1
+    path_unfinished["count"] = 1
+
+    # combine finished and unfinished paths
+    paths = pd.concat([path_finished[['start','end','count']], path_unfinished[['start','end','count']]])
+    by_path = paths[["start","end","count"]].groupby(by=['start', 'end']).count().sort_values(by='count', ascending=False).reset_index()
+    return by_path

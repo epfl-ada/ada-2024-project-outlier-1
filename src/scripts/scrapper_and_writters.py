@@ -8,7 +8,7 @@ from time import sleep
 
 def scrape_wikipedia_articles(article_titles):
     """
-    Scrapes the content of a list of Wikipedia articles and returns the links those articles contain.
+    Scrapes the content of a given list of Wikipedia articles and returns the links those articles contain.
     
     Parameters:
     article_titles (list): A list of Wikipedia article titles to scrape.
@@ -29,7 +29,6 @@ def scrape_wikipedia_articles(article_titles):
             article_links[title] = []
             article_names.append(title)
             
-            
             # Find the direct link to the current article title
             for link in soup.find_all("a", href=lambda href: href and href.startswith("/wiki/")):
                 list_href = link.get("href").splitlines()
@@ -40,6 +39,34 @@ def scrape_wikipedia_articles(article_titles):
             print(f"Error scraping {title}: {response.status_code}")
     
     return article_links, article_names
+
+def scrape_and_write_wikipedia_htmls(article_titles, path):
+    """
+    Scrapes the content of a given list of Wikipedia articles and writes their associated html page to the given path.
+
+    Args:
+        article_titles (list): A list of Wikipedia article titles to scrape.
+        path (str): The path to the directory where the html files will be written.
+    """
+    for title in tqdm(article_titles, desc="Scraping Wikipedia articles", unit="article"):
+        url = f"https://en.wikipedia.org/wiki/{title.replace(' ', '_')}"
+        response = requests.get(url)
+        
+        sleep(0.1) # Be polite to Wikipedia servers
+        if response.status_code == 200:
+            soup = BeautifulSoup(response.content, "html.parser")
+            article_links[title] = []
+            article_names.append(title)
+            
+            # Find the direct link to the current article title
+            for link in soup.find_all("a", href=lambda href: href and href.startswith("/wiki/")):
+                list_href = link.get("href").splitlines()
+                for href in list_href:
+                    if href.split('/')[-1] in article_titles and href.split('/')[-1] != title:
+                        article_links[title].append(href.split('/')[-1])
+        else:
+            print(f"Error scraping {title}: {response.status_code}")
+    return None
 
 
 

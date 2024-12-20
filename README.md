@@ -111,7 +111,7 @@ In this project, we focus on the performances of Wikispeedia players, the change
 
 Gabrielle Blouvac (AKA: Our Official Graphic Designer): part 2, created images for the datastory
 
-Anasse El Boudiri (AKA: The Pie-Chart Hater): part 3, bonus: convinced the team to choose this Dataset <3
+Anasse El Boudiri (AKA: The Pie-Chart and Iframe Hater): part 3, bonus: convinced the team to choose this Dataset <3
 
 Julia Guignon (AKA: The Plotly Toxic Lover): part 1, layout of the website
 
@@ -119,4 +119,4 @@ Jan Steiner (AKA: The LLM genius): part 4, bonus: saver of the website content b
 
 Eglantine Vialaneix (AKA: The Scrapping Expert): scrapping expert of 2024 Wikipedia, preprocessing of 2024 data, part 2.0, layout of the website
 
-All: READ_ME, proof-reading, homeworks
+All: READ_ME, proof-reading, layout of the website (html+css), homeworks

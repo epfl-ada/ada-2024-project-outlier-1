@@ -44,6 +44,10 @@ def delete_duplicates_cat(df_cat, relationships):
 
 
 def art_not_in_cat(df, df_cat, col, index=False):
+    """
+        Check if in an article is present in `categories.tsv`
+    """
+
     if index:
         target_in_cat = df[col].isin(df_cat.index)
     else:
@@ -52,15 +56,17 @@ def art_not_in_cat(df, df_cat, col, index=False):
 
 
 def articles_in_common(list1, list2) :
-    '''
-    Returns list of articles names that appear in both list1 and list2
-    '''
+    """
+        Returns list of articles names that appear in both list1 and list2
+    """
 
     return set(list1['linkSource']).intersection(list2['linkSource'])
 
 
 def cleaned_paths(df_f, df_unf, df_cat, art_to_remove, verbose=True):
-    # df_cat = df_cat.set_index('article', drop=True)
+    """
+        Clean the paths.
+    """
     
     init_rows_f = df_f.shape[0]
     init_rows_unf = df_unf.shape[0]
@@ -95,6 +101,9 @@ def cleaned_paths(df_f, df_unf, df_cat, art_to_remove, verbose=True):
 
 
 def compute_stats_games(df, type_path):
+    """
+        Compute statistics on games.
+    """
     df_stats = pd.DataFrame(df.index.value_counts().sort_index())
     df_stats.index.names = ['start', 'target']
     df_stats[f'avg_{type_path}_path'] = df['path'].str.len().groupby(level=[0,1]).mean()
@@ -111,11 +120,17 @@ def compute_stats_games(df, type_path):
     return df_stats
 
 def chi2_contingency_test(counts1, counts2):
+    """
+        Give pvalue and statistic from 2 distributions via a chi2_contingency test.
+    """
     test = chi2_contingency(np.vstack((counts1, counts2)))
     return test.pvalue, test.statistic
 
 
 def prepare_all_games(path_f, path_unf, cats, links, arts):
+    """
+        Gather data from finished and unfinished paths into a new dataframe containing all the games played.
+    """
 
     def parse_game_serie(game):
         split = game.split(', ')
@@ -181,6 +196,9 @@ def prepare_all_games(path_f, path_unf, cats, links, arts):
     return all_games
 
 def get_fp_fn_tp_tn(y_true, y_pred):
+    """
+        Get the false positive, false negative, true positive and true negative counts.
+    """
     if len(y_true) != len(y_pred):
         raise ValueError("y_true and y_pred must have the same length")
 
@@ -194,6 +212,9 @@ def get_fp_fn_tp_tn(y_true, y_pred):
     return fp, fn, tp, tn
 
 def precision_neg(y_true, y_pred):
+    """
+        Compute lists of relevant metrics for different threshold probabilites.
+    """
     fp, fn, tp, tn = get_fp_fn_tp_tn(y_true, y_pred)
     try:
         pn = tn / (tn+fn)
@@ -202,6 +223,9 @@ def precision_neg(y_true, y_pred):
     return pn
 
 def recall_neg(y_true, y_pred):
+    """
+        Compute lists of relevant metrics for different threshold probabilites.
+    """
     fp, fn, tp, tn = get_fp_fn_tp_tn(y_true, y_pred)
     try:
         rn = tn / (tn+fp)
@@ -210,6 +234,9 @@ def recall_neg(y_true, y_pred):
     return rn
 
 def f1_score_neg(y_true, y_pred):
+    """
+        Compute lists of relevant metrics for different threshold probabilites.
+    """
     pn = precision_neg(y_true, y_pred)
     rn = recall_neg(y_true, y_pred)
 
@@ -221,6 +248,9 @@ def f1_score_neg(y_true, y_pred):
 
 
 def get_relevant_metrics(ytrue, pred_proba, n=101):
+    """
+        Compute lists of relevant metrics for different threshold probabilites.
+    """
     try:
         tmp = [[y[1]>i for y in pred_proba] for i in np.linspace(0, 1, n)]
     except:

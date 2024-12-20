@@ -6,6 +6,8 @@ import seaborn as sns
 import networkx as nx
 from matplotlib.patches import Patch
 import random
+from scipy.stats import t
+
 
 import matplotlib as mpl
 from collections import defaultdict
@@ -16,7 +18,8 @@ from plotly.subplots import make_subplots
 from math import log10
 
 
-__all__ = ['plot_average_links_per_page',
+__all__ = ['compute_CI_95',
+           'plot_average_links_per_page',
            'plot_pagerank_distribution',
            'plot_difference_links_article',
            'creating_graph',
@@ -44,6 +47,24 @@ __all__ = ['plot_average_links_per_page',
            'plot_log_reg_coeff',
            'plot_metrics']
 
+def compute_CI_95(data):
+    '''
+    Computes the 0.95% confidence interval for the data given and returns the margin of error and the mean
+    '''
+    confidence = 0.95
+
+    # Calculate statistics
+    mean = np.mean(data)
+    std = np.std(data, ddof=1)  # Use ddof=1 for sample standard deviation
+    n = len(data)
+
+    # Compute the margin of error
+    t_value = t.ppf((1 + confidence) / 2, df=n-1)
+    margin_of_error = t_value * (std / np.sqrt(n))
+
+    margin_of_error
+
+    return margin_of_error, mean
 
 def plot_average_links_per_page(links2007, links2024, articles, graph_based=False) :
     """
@@ -62,7 +83,7 @@ def plot_average_links_per_page(links2007, links2024, articles, graph_based=Fals
     print('T test p value :', pvalue)
 
     # p value = 1.04 e-305 << alpha = 0.05, the two distributions have significantly different means
-    fig = plt.figure(figsize=(8,4))
+    fig = plt.figure(figsize=(12,4))
 
     if(graph_based) : 
         ### creating Graphs 
@@ -80,12 +101,17 @@ def plot_average_links_per_page(links2007, links2024, articles, graph_based=Fals
         ax.set(title='Distribution of the number of links per article', xlabel='number of links', ylabel='number of pages')
         plt.legend()
 
+    error_2007, mean_2007 = compute_CI_95(summary2007.count())
+    error_2024, mean_2024 = compute_CI_95(summary2024.count())
+
+
     plt.subplot(1, 2, 2)
-    plt.bar(x=['2007', '2024'], height= [np.mean(summary2007.count()), np.mean(summary2024.count())])
+    plt.bar(x=['2007', '2024'], height= [mean_2007, mean_2024], yerr= (error_2007, error_2024))
+
     plt.ylabel('Average number of links / page')
     plt.title('Mean number of links per page')
 
-    plt.tight_layout()
+    # plt.tight_layout()
     plt.show()
 
 def plot_pagerank_distribution(pagerank_2007, pagerank_2024) :

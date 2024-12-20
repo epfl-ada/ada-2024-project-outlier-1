@@ -46,11 +46,11 @@ __all__ = ['plot_average_links_per_page',
 
 
 def plot_average_links_per_page(links2007, links2024, articles, graph_based=False) :
-    '''
+    """
     bar plot of the mean number of links per pages, and compute independent t test 
     Graph based approach can be used when graph_based is set to True to take isolated nodes into account 
     Otherwise just computes the distribution based on the links list
-    '''
+    """
     summary2007 = links2007.groupby(by='linkSource')
     summary2024 = links2024.groupby(by='linkSource')
 
@@ -89,9 +89,9 @@ def plot_average_links_per_page(links2007, links2024, articles, graph_based=Fals
     plt.show()
 
 def plot_pagerank_distribution(pagerank_2007, pagerank_2024) :
-    '''
+    """
     Plot the distributions of pageranks for the 2 years
-    '''
+    """
     # [[key, pagerank_2007[key]] for key in sorted_pr_2007]
     sorted_pr_2007 = sorted(pagerank_2007, key = pagerank_2007.get, reverse=True)
     sorted_pr_2024 = sorted(pagerank_2024, key = pagerank_2024.get, reverse=True)
@@ -104,11 +104,11 @@ def plot_pagerank_distribution(pagerank_2007, pagerank_2024) :
     ax.set_xlim([0,0.004])
 
 def plot_difference_links_article(links2007, links2024) :
-    '''
+    """
     Plotting differences in links count per articles in 2004 vs 2007 
     Above zero : there are more links in 2024 
     Below zero : there are more links in 2007
-    '''
+    """
     
     # Aggregate counts of links per linkSource for each year
     count_2007 = links2007.groupby(by='linkSource').size()
@@ -149,38 +149,38 @@ def plot_difference_links_article(links2007, links2024) :
     plt.show()
 
 def creating_graph(links_list, articles_list) :
-    '''
+    """
     Creating a directed graph from the articles list, with edges from the links list 
-    '''
+    """
     G = nx.DiGraph()
     G.add_nodes_from(np.unique(articles_list))
     G.add_edges_from(links_list.to_numpy())
     return G
 
 def computing_shortest_path_matrix(G, articles_list) :
-    '''
+    """
     Computing the shortest path matix according to the Floyd Warshall Algorithm
     Warning : this takes approximately 5 to 10 min to run.
-    ''' 
+    """ 
     return nx.floyd_warshall_numpy(G, nodelist= np.unique(articles_list.iloc[:,0]))
 
 def computing_difference_spm(spm1, spm2):
-    ''' 
+    """ 
     Function to compare the two shortest path matrix. Infinite values are replaced by 10 (maximum shortest path value) 
     to avoid having inf to 4 hops being considered as inf. 
     Returns the difference of spm2 - spm1
-    '''
+    """
     spm1 = np.where(spm1 == float('inf'), 10, spm1)
     spm2 = np.where(spm2 == float('inf'), 10, spm2)
     return spm2 - spm1
 
 def plotting_difference_heatmap_sns(spm1, spm2) :
-    '''
+    """
     seaborn version--> see plotting_difference_heatmap_plotly for interactive visualisation
     Visualise the difference in shortest paths using a heatmap.
     Red : the path is shorter in spm2 than spm1
     Blue : the path is longer in spm2 than spm1
-    '''
+    """
     data = computing_difference_spm(spm1,spm2)
 
     sns.heatmap(data, vmin=-9, vmax=9, cmap='coolwarm')
@@ -190,12 +190,12 @@ def plotting_difference_heatmap_sns(spm1, spm2) :
 
 
 def plotting_difference_heatmap_plotly(spm1, spm2) :
-    '''
+    """
     Plotly version, interactive
     Visualise the difference in shortest paths using a heatmap.
     Red : the path is shorter in spm2 than spm1
     Blue : the path is longer in spm2 than spm1
-    '''
+    """
     data = computing_difference_spm(spm1, spm2)
 
     fig = go.Figure(data=go.Heatmap(
@@ -217,9 +217,9 @@ def computing_mean_shortest_path(spm) :
     return np.mean(spm_values)
 
 def plot_pagerank(G, year, threshold_value=0.005) :
-    '''
+    """
     plot the network of the top threshold_value% nodes based on pagerank centrality using Plotly
-    '''
+    """
     # computing pagerank
     pagerank = nx.pagerank(G)
     # Determine the threshold for top 20% of PageRank values
@@ -314,10 +314,10 @@ def plot_pagerank(G, year, threshold_value=0.005) :
     return fig
 
 def computing_scc_avg(G):
-    '''
+    """
     Computes the Strongly Connected Components of given graph G and returns its overall average shortest path across SCCs
     Disconnected nodes average are not taken into account in the computation of the overall average shortest path
-    '''
+    """
     SCC = list(nx.strongly_connected_components(G))
 
     scc_avg_lengths = []
@@ -467,9 +467,9 @@ def get_multistep_sankey_data(df, categories, get_stats=False, suffix_fn='1'):
 
 
 def plotly_save_to_html(fig, fn):
-    '''
+    """
     Saves given interactive figure to html
-    '''
+    """
     pio.show(fig)
     pie_html = pio.to_html(fig)
 
@@ -480,6 +480,9 @@ def plotly_save_to_html(fig, fn):
 
 
 def plot_heatmap(vals, names, num_links, type_plot, vmin=0, vmax=0, gamma=0.47, stats=False):
+    """
+        Plot a heatmap. Possible values for type_plot: links, unf_start, unf_target, f.
+    """
     fig = go.Figure()
 
     if type_plot=='links':
@@ -551,6 +554,9 @@ def plot_heatmap(vals, names, num_links, type_plot, vmin=0, vmax=0, gamma=0.47, 
 
 
 def plot_heatmap_datastory(vals, names, num_links, type_plot, vmin=0, vmax=0, gamma=0.47):
+    """
+        Plot the heatmap for the datastory.
+    """
     fig = go.Figure()
     w = 0
     h = 0
@@ -643,6 +649,9 @@ def plot_heatmap_datastory(vals, names, num_links, type_plot, vmin=0, vmax=0, ga
 
 
 def plot_heatmap_differences(distrib1, distrib2, names, tot_links_1, vmin=0, vmax=0, gamma=0):
+    """
+        Plot a heatmap of differences between distrib1 and distrib2.
+    """
     fig = go.Figure()
 
     fn = f'categories_differences'
@@ -736,6 +745,9 @@ def colorscale_cmap(cmap_name, data, gamma, vmin, vmax):
 
 
 def get_palette_cat():
+    """
+        Fancy color palette.
+    """
     fancy_palette = {"Art": "#daa520",
                     "Business_Studies": "#000000",
                     "Countries": "#e31a1c",
@@ -836,6 +848,9 @@ def plot_distribution_path_length(G_2007, G_2024, n_samples=100, start_hops=0, n
 
 
 def plot_cat_pie_chart(categories):
+    """
+        Create an interative plotly pie chart of the categories.
+    """
     counts = categories.main_category.value_counts()
     fancy_palette = get_palette_cat()
     categories['count'] = categories.main_category.apply(lambda x: counts.loc[x])
@@ -859,6 +874,9 @@ def plot_cat_pie_chart(categories):
     plotly_save_to_html(fig, 'pie_cat')
 
 def plot_cat_bar(categories):
+    """
+        Create an interative plotly bar plot of the categories.
+    """
     counts_norm = categories.main_category.value_counts(normalize=True)
     counts = categories.main_category.value_counts()
 
@@ -891,6 +909,9 @@ def plot_cat_bar(categories):
     plotly_save_to_html(fig, 'bar_cat')
 
 def interactive_plot_distrib_length_shortest_path(all_games, fn='distrib_path_lengths_wrt_shortest_path'):
+    """
+        Create an interative plotly histogram of the distribution of path length with sliders for the shortest path.
+    """
     fig = go.Figure()
     minSP=1
     x_title = 0.7; y_title = 1.3
@@ -949,8 +970,8 @@ def interactive_plot_distrib_length_shortest_path(all_games, fn='distrib_path_le
                 visible=False,
                 marker=dict(color='rgba(0, 0, 0, 0.5)'),
                 name="shortest path",
-                x=[step+0.5, step+0.5],  # Replace `10` with the desired x-values for your line
-                y=[0, 1],  # Use numeric offsets
+                x=[step+0.5, step+0.5], 
+                y=[0, 1], 
                 hoverinfo='skip',
             )
         )
@@ -1006,12 +1027,12 @@ def interactive_plot_distrib_length_shortest_path(all_games, fn='distrib_path_le
                             font=dict(size=25),
                             xanchor="center",
                             text=f"Distribution of the players' path<br>lengths when the shortest path is {i+minSP}"), ]}
-                ],  # layout attribute
+                ],  
             label = f'{i+minSP}',
         )
-        step["args"][0]["visible"][3*i] = True  # Toggle i'th trace to "visible"
-        step["args"][0]["visible"][3*i+1] = True  # Toggle i'th trace to "visible"
-        step["args"][0]["visible"][3*i+2] = True  # Toggle i'th trace to "visible"
+        step["args"][0]["visible"][3*i] = True  
+        step["args"][0]["visible"][3*i+1] = True  
+        step["args"][0]["visible"][3*i+2] = True  
         steps.append(step)
 
     sliders = [dict(
@@ -1086,6 +1107,9 @@ def interactive_plot_distrib_length_shortest_path(all_games, fn='distrib_path_le
 
 
 def plot_distrib_number_links2target(df, fn='distrib_links_to_target'):
+    """
+        Create an interative plotly histogram of the distribution of the number of links leading to the target article.
+    """
     fig = go.Figure(layout=go.Layout(width=400, height=500, font_size=16))
     minSP=3
     x_title = 0.7; y_title = 1.3
@@ -1097,7 +1121,6 @@ def plot_distrib_number_links2target(df, fn='distrib_links_to_target'):
     def hist_add_trace_ltt(finished):
         data = df.loc[df['finished?']==finished].links_to_target
 
-        # bins = np.round(np.concatenate((np.arange(0, 6), np.logspace(0.778, 3, 20))), 0)
         bins = np.round(np.logspace(0, 3, 20))[1:]
         hist, edges = np.histogram(data.values, bins=bins)
         
@@ -1153,6 +1176,9 @@ def plot_distrib_number_links2target(df, fn='distrib_links_to_target'):
 
 
 def plot_log_reg_coeff(fit, fn='results_log_reg_cat', alpha=0.01, not_sign=False):
+    """
+        Create an interative plotly bar plot of the coefficients of a fit.
+    """
     fig = go.Figure()
 
     results = pd.DataFrame(fit.params.sort_values(), columns=['coeff'])
@@ -1161,7 +1187,6 @@ def plot_log_reg_coeff(fit, fn='results_log_reg_cat', alpha=0.01, not_sign=False
     results['SEM'] = fit.bse
     
     def colored_text(color, text):
-        # color: hexadecimal
         s = "<span style='color:" + str(color) + "'>" + str(text) + "</span>"
         return s
     
@@ -1254,6 +1279,9 @@ def plot_log_reg_coeff(fit, fn='results_log_reg_cat', alpha=0.01, not_sign=False
     
 
 def plot_metrics(metrics_, names, fn=''):
+    """
+        Create an interative plotly scatter plot of metrics given as an array in argument, w.r.t. the threshold probability.
+    """
     fig = go.Figure()
 
     def plot_one_metric(val, x, name, fig):

@@ -66,9 +66,9 @@ In this project, we focus on the performances of Wikispeedia players, the change
 
     - Structural Comparison: 2007 vs. 2024
 
-        - use Node2Vec and Sentence-BERT to measure and compare structural similarities
-
-        - evaluate which structure offers better navigation efficiency using these metrics.
+        - use Node2Vec to measure graph-similarity
+        - use Sentence-BERT to measure semantic similarity in the first paragraph of the articles
+        - evaluate which structure offers better navigation efficiency using these metrics, comparing their distributions of the metrics on the 2007 and 2024 datasets 
 
 4. Consequences on LLMs performance
 

@@ -22,3 +22,4 @@ node2vec
 sentence-transformers
 gensim
 statsmodels==0.14.0
+nbformat>=4.2.0

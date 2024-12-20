@@ -145,31 +145,35 @@ def plot_difference_links_article(links2007, links2024) :
     # we sort 2024 in the same order as 2007 to be able to compare them 
     sorted_values_2024 = count_2024.reindex(sorted_values_2007.index)
 
-    difference= sorted_values_2024 - sorted_values_2007
+    difference = sorted_values_2024 - sorted_values_2007
+    difference = difference.sort_values(ascending=False)
     colors = [ 'lightseagreen' if val>0 else 'coral' for val in difference]
 
     fig = plt.figure(figsize=(10,6))
-    ax = sns.barplot(x= difference.index, y = difference, palette= colors)
+    ax = sns.barplot(x= difference.index, y = difference, palette = colors, hue=difference.index, width=1)
+
     ax.set_xticklabels([])
- 
-    ax.set_ylim([-100,250])
+    ax.set(title='Difference in Number of links per article',
+        ylabel='Number of links per article in 2024 - 2007')
+    ax.set_title(ax.get_title(), fontsize=14) 
+    ax.set_ylabel(ax.get_ylabel(), fontsize=14) 
+    ax.tick_params(labelsize=12) 
 
-    for tick in ax.get_xticklines():
-        tick.set_visible(False)
-
-    for label in ax.get_xticklabels():
-        label.set_visible(False)
-
-    ax.set_xlabel("Source Articles")
-
-    ax.set(title='Difference in Number of links per article', 
-        xlabel='Source Articles', ylabel='#links/article in 2024 - 2007')
+    ax.set_ylim([-170, 270])
+    ax.set_xlim([-100, len(difference) + 100])
 
     legend_elements = [
         Patch(facecolor='lightseagreen', edgecolor='black', label='More links in 2024'),
         Patch(facecolor='coral', edgecolor='black', label='Less links in 2024')
     ]
-    plt.legend(handles=legend_elements, title='Legend', loc='upper right')
+    plt.legend(handles=legend_elements, title='Legend', loc='upper right', fontsize=12, title_fontsize=12)
+
+    nbr_patches = len(ax.patches)
+    idx = [0, 1, 2, 3, nbr_patches - 4, nbr_patches - 3, nbr_patches - 2, nbr_patches - 1]
+    for i in idx:
+        ax.patches[i].set_width(5)
+
+    ax.get_xaxis().set_visible(False)
 
     plt.tight_layout()
     plt.show()
@@ -499,7 +503,7 @@ def plotly_save_to_html(fig, fn):
     pio.show(fig)
     pie_html = pio.to_html(fig)
 
-    with open(fn+'.html', 'w') as f:
+    with open("img/plots/"+fn+'.html', 'w') as f:
         f.write(pie_html)
 
 

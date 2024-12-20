@@ -132,14 +132,14 @@ def loading_zipped_spm(control=False):
     To load the zipped version of the Shortest Path Matrices already computed for control or wikipedia graphs
     '''
     if(control):
-        zf = zipfile.ZipFile('./data/control.zip')
+        zf = zipfile.ZipFile('data/control.zip')
         control_spm_2007 = np.array(pd.read_csv(zf.open('control2007.csv')))
         control_spm_2024 = np.array(pd.read_csv(zf.open('control2024.csv')))
 
         return control_spm_2007, control_spm_2024
     
     else :
-        zf = zipfile.ZipFile('./data/spm.zip')
+        zf = zipfile.ZipFile('data/spm.zip')
 
         spm_2007 = np.array(pd.read_csv(zf.open('spm2007.csv')))
         spm_2024 = np.array(pd.read_csv(zf.open('spm2024.csv')))

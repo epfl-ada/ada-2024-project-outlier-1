@@ -25,7 +25,7 @@ This project mainly relies on comparing the performance of Wikispeedia players o
 
 ### Methods:
 
-In this project, we focus on the performances of Wikispeedia players, the changes that occurred in the structure of Wikipedia between 2007 and 2024 and the links between these two elements. These are two very different tasks that we however link and analyze the effect the latter could have had on the former. We thus decided to split our approach as follow:
+In this project, we focus on the performances of Wikispeedia players, the changes that occurred in the structure of Wikipedia between 2007 and 2024 and the links between these two elements. These are two very different tasks that we link. We analyze the effect that the structure could have on the players' performance. We thus decided to split our approach as follow:
 
 1. Exploration and analysis of players’ performances in 2007
 
@@ -39,68 +39,68 @@ In this project, we focus on the performances of Wikispeedia players, the change
 
 2. Comparison of Wikipedia’s structure between 2007 and 2024
 
-    To compare both databases we want to have the best equivalence possible between the two years. To obtain 2024 Wikipedia, we have downloaded nowadays articles based on their past URL. This method has its own limits, so before analyzing the results we:
+    To compare both databases we want to have the best equivalence possible between the two years. To obtain 2024 Wikipedia, we have downloaded current articles based on their past URL. This method has its own limits, so before analyzing the results we:
 
-    - Identify URLs that disappeared since 2007
+    - Identify URLs that no longer exist nowadays
 
     - Find and correct ambiguous and homonymous pages
 
 
     Once the data is fully and correctly retrieved, with the list of articles and links of 2024 exactly matching the list from 2007: 
 
-    - Analyze difference in structure between the two years: comparison of the number of links per pages, average number of links.
+    - Analyze the difference in structure between the two years: comparison of the number of links per page and the average number of links.
 
     - Compute and compare shortest path matrix using Floyd Warshall Algorithm: comparison of the average shortest path between the two years and comparison of the average shortest path across strongly connected components.
 
     - Assess Network differences: comparison of the average clustering coefficients, computation of the pagerank centrality of both networks, comparision of pageranks value for the most central nodes, comparison of the top 20 central nodes and comparison of the average node degree and reachability of the networks. 
 
-3. Consequences of Wikipedia’s changes in player’s performances
+3. Consequences of the changes of Wikipedia in player’s performances
 
-    We aim to explore how Wikipedia's structural changes from 2007 to 2024 would impact players’ decisions and paths in Wikispeedia. Specifically, we will examine whether these changes make it easier to complete paths and evaluate the efficiency of the updated structure.
+    We explore how the structural changes of Wikipedia between 2007 and 2024 impact players’ decisions and paths in Wikispeedia. Specifically, we examine whether these changes make it easier to win games and evaluate the efficiency of the updated structure.
 
     - Player Path Analysis
 
-        - Assess if unfinished paths from 2007 could now be completed faster using the 2024 structure
+        - assess if unfinished paths from 2007 could now be completed using the 2024 structure
 
-        - Compare finished 2007 paths to potential routes in 2024 for efficiency improvements
+        - check if new links from 2024 structure allow us to finish 2007 paths faster
 
     - Structural Comparison: 2007 vs. 2024
 
-        - Use Node2Vec and Sentence-BERT to measure and compare structural similarities
+        - use Node2Vec and Sentence-BERT to measure and compare structural similarities
 
-        - Evaluate which structure offers better navigation efficiency using these metrics.
+        - evaluate which structure offers better navigation efficiency using these metrics.
 
 4. Consequences on LLMs performance
 
-    We use Mistral and Llama3 models to simulate playing performance on Wikispeedia. We then compare their performance to the one of the players in 2007. To do so, we need to:
+    We use Mistral and Llama3 models to simulate players' performance on Wikispeedia. We then compare their performance to the one of the players in 2007. To do so, we:
 
-    - Determine which games (start and target articles) we choose to play with the LLMs
-    - Determine the maximum number of steps the LLMs can take
-    - Make the LLMs play the games by first giving the context of the game with an example of path with a reasoning for the choice of the path. 
-    - Then let the LLMs play the game by giving the start article and the options of links to follow.
-    - Analyze for how many games Llama3 and Mistral successfully completed
-    - Analyze the path length distribution of the games played by the LLMs with the one of the players
-    - Compare the similarity of the paths found by the LLMs and the players with the Jaccard similarity
+    - determine which games (start and target articles) we choose to play with the LLMs plotting the CCDF of played games
+    - determine the maximum number of steps the LLMs can take
+    - make the LLMs play the games by first giving the context of the game with an example of path with a reasoning for the choice of the path 
+    - let the LLMs play the game by giving the start article and the options of links to follow.
+    - analyze how many games Llama3 and Mistral successfully completed
+    - analyze the path length distribution of the games played by the LLMs and the path length distribution of the players
+    - compare the similarity of the paths found by the LLMs and the players with the Jaccard similarity
   
-    Then based on the results of the comparison, we will choose the model that mimics the players the best and play the games in 2024. We will then compare the performance of the LLMs in 2024 to the one in 2007.
+    Then based on the results of the comparison, we choose the model that mimics the players the best and play the games in 2024. We then compare the performance of the LLMs in 2024 to the one in 2007 by:
 
-    - Comparing the number of paths found by the LLMs in 2024 and 2007
-    - Comparing the path length distribution of the games played by the LLMs in 2024 and 2007
+    - comparing the number of paths found by the LLMs in 2024 and 2007
+    - comparing the path length distribution of the games played by the LLMs in 2024 and 2007
 
 
 ### Main Results:
 
 1. Factors of success:
 
-    Some categories have a positive or negative influence the success rate. A longer shortest path decreases slightly the odds of success whereas the number of links to target strongly increases it. The model is not fully satisfying and could be improve if we had more data about the players and/or the games played.
+    Some categories have a positive or negative influence on the success rate. A longer shortest path decreases slightly the odds of success whereas the number of links to target strongly increases it. The model is not fully satisfying and could be improved if we had more data about the players and/or the games played.
 
 2. Wikipedia structure evolution: 
 
-    From our analysis, we observe that the structure of Wikipedia has evolved a lot in 2024. Many links are created which results in a better connectivity of the graph overall and a shorter average shortest path. We see that the network is less dominated by one very central node but has a more equally distributed centrality of main nodes. However the overall structure of the two networks is the same, with one big cluster being strongly connected and containing the majority of the articles. Even though both graphs are very different, it is hard to infer how this difference would impact the players in their game performance and we perform further analysis in part 3 to study this. 
+    From our analysis, we observe that the structure of Wikipedia has evolved a lot in 2024. Many links are created which results in a better connectivity of the graph overall and a shorter average shortest path. We see that the network is less dominated by one very central node but has a more equally distributed centrality of main nodes. However, the overall structure of the two networks is the same, with one big cluster being strongly connected and containing the majority of the articles. Even though both graphs are very different, it is hard to infer how this difference would impact the players in their game performance and we perform further analysis in part 3 to study this. 
 
-3. Changes in players paths and performances : 
+3. Changes in players' paths and performances : 
 
-    We assess how the structural changes in Wikipedia impact the paths played in the 2007 dataset. The target link appear sooner in 2024 than in 2007 on the paths played, both for finished and unfinished paths. We use the similarity measure to compare the structures and see that similarity between articles is higher for 2024 than for 2007. This shows that the 2024 network might be more precise and intuitive to naviguate. 
+    We assess how the structural changes in Wikipedia impact the paths played in the 2007 dataset. The target link appears sooner in 2024 than in 2007 on the paths played, both for finished and unfinished paths. We use the similarity measure to compare the structures and see that the similarity between articles is higher for 2024 than for 2007. This shows that the 2024 network might be more precise and intuitive to navigate. 
 
 4. LLMs performance: 
 
@@ -111,12 +111,12 @@ In this project, we focus on the performances of Wikispeedia players, the change
 
 Gabrielle Blouvac (AKA: Our Official Graphic Designer): part 2, created images for the datastory
 
-Anasse El Boudiri (AKA: The Pie-Chart and Iframe Hater): part 3, bonus: convinced the team to choose this Dataset <3
+Anasse El Boudiri (AKA: The Pie-Chart and Iframe Hater): part 3, bonus: convinced the team to choose this dataset <3
 
-Julia Guignon (AKA: The Plotly Toxic Lover): part 1, layout of the website
+Julia Guignon (AKA: The Plotly Toxic Lover): part 1
 
 Jan Steiner (AKA: The LLM genius): part 4, bonus: saver of the website content bar
 
-Eglantine Vialaneix (AKA: The Scrapping Expert): scrapping expert of 2024 Wikipedia, preprocessing of 2024 data, part 2.0, layout of the website
+Eglantine Vialaneix (AKA: The Scrapping Expert): scrapping expert of 2024 Wikipedia, preprocessing of 2024 data, part 2.0
 
 All: READ_ME, proof-reading, layout of the website (html+css), homeworks

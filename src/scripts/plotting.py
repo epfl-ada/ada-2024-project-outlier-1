@@ -38,6 +38,7 @@ __all__ = ['plot_average_links_per_page',
            'colorscale_cmap',
            'get_palette_cat',
            'plot_cat_pie_chart',
+           'plot_cat_bar',
            'interactive_plot_distrib_length_shortest_path',
            'plot_distrib_number_links2target',
            'plot_log_reg_coeff',
@@ -857,6 +858,37 @@ def plot_cat_pie_chart(categories):
                     
     plotly_save_to_html(fig, 'pie_cat')
 
+def plot_cat_bar(categories):
+    counts_norm = categories.main_category.value_counts(normalize=True)
+    counts = categories.main_category.value_counts()
+
+    fig = go.Figure(layout=go.Layout(width=800, height=500))
+
+    fig.add_trace(go.Bar(
+                        x=counts_norm.index,
+                        y=counts_norm.values*100,
+                        showlegend=False,
+                        customdata = counts.values,
+                        marker_color = px.colors.qualitative.Plotly+px.colors.qualitative.Plotly,
+                        hovertemplate='<b>%{label}</b><br> Counts: %{customdata} <br> Frequency: %{y:0.2f}% <extra></extra>'
+                    )
+    )            
+            
+    fig.update_yaxes(
+        title = 'Percentage of articles [%]'
+    )
+
+    fig.update_xaxes(
+        title = 'Categories'
+    )
+
+    fig.update_layout(
+        font_size = 18,
+        title = dict({'text': f"Share of main categories in the Wikispeedia dataset", 'x': 0.5, 'xanchor': 'center'}),
+        margin=dict(l=20, r=20, t=50, b=20),
+    )
+                    
+    plotly_save_to_html(fig, 'bar_cat')
 
 def interactive_plot_distrib_length_shortest_path(all_games, fn='distrib_path_lengths_wrt_shortest_path'):
     fig = go.Figure()
@@ -1141,9 +1173,11 @@ def plot_log_reg_coeff(fit, fn='results_log_reg_cat', alpha=0.01, not_sign=False
             idx_cat = el.find('_')+1
             cat = el[idx_cat:]
             if el.count('catSource')>0:
-                tmp = colored_text(fancy_palette[cat], f'Source article category = {cat}')
+                # tmp = colored_text(fancy_palette[cat], f'Source article category = {cat}')
+                tmp = f'Source article category = {cat}'
             elif el.count('catTarget')>0:
-                tmp = colored_text(fancy_palette[cat], f'Target article category = {cat}')
+                # tmp = colored_text(fancy_palette[cat], f'Target article category = {cat}')
+                tmp = f'Target article category = {cat}'
             else:
                 tmp = el 
             y.append(tmp)
@@ -1204,6 +1238,13 @@ def plot_log_reg_coeff(fit, fn='results_log_reg_cat', alpha=0.01, not_sign=False
         font_size = 18,
         title = dict(text = 'Significant coefficients', x=0.5, xanchor='center', font=dict(size=25)),
         hoverlabel=dict(bgcolor="#fdfdfd", font_size=14)
+    )
+
+    fig.update_xaxes(
+        title_text=f"Coefficient values"
+    )
+    fig.update_yaxes(
+        title_text=f"Predictors"
     )
     
     if len(fn)>0:
